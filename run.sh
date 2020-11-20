@@ -49,6 +49,6 @@ mkdir -p solutions/0$1_track_$2
 
 sed -e "s/\\\$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}/$res/g" <weqs_int_bench_task.ref >solutions/0$1_track_$2/weqs_int_bench_0$1_track_$2.ref
 
-inref4p solutions/0$1_track_$2/weqs_int_bench_0$1_track_$2.ref
-scp4 weqs_int_bench_0$1_track_$2.mst
-cgr54 solutions/0$1_track_$2/result.ref
+inref4p solutions/0$1_track_$2/weqs_int_bench_0$1_track_$2.ref || exit
+scp4 weqs_int_bench_0$1_track_$2.mst || exit
+cgr54 solutions/0$1_track_$2/result.ref || exit
