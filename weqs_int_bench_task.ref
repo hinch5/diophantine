@@ -4,6 +4,10 @@
 
 $ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}
 
+/*$ENTRY GO {e.x = <Print <Decode (<Conc ('ABt  =') ' CBt' >)>> ;}*/
+
+/*$ENTRY Go {  = <Print <Eq (('ABt -> a')) <Print <Sim ( ) <Print <Decode (<Conc ('ABt =') ' a'>)>>>>>>;}*/
+
 /* Auxiliary function concatenating too long input strings.*/
 Conc {(e.1) e.2 = e.1 e.2;}
 
@@ -63,17 +67,17 @@ Translate {
 	Started (e.Result)'FTF' () (e.variables)(e.alphabet)s.Name
 		= e.Result s.Name;
 	/* закончили буквенную и дальше есть много всего */
-	Started (e.Result) 'TFT' e.LetterName (e.variables)(e.alphabet) s.Name 't ' s.Next s.Next2 e.Rest
+	Started (e.Result) 'TFT' (e.LetterName) (e.variables)(e.alphabet) s.Name 't ' s.Next s.Next2 e.Rest
 		= <Translate Started (e.Result (var 't' (e.LetterName s.Name)))
 			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSet s.Next2(e.variables)> ()
 			(e.variables)(e.alphabet) s.Next s.Next2 e.Rest>;
 	/* закончили буквенную и дальше есть один символ */
-    Started (e.Result) 'TFT' e.LetterName (e.variables)(e.alphabet) s.Name 't ' s.Next e.Rest
+    Started (e.Result) 'TFT' (e.LetterName) (e.variables)(e.alphabet) s.Name 't ' s.Next e.Rest
     	= <Translate Started (e.Result (var 't' (e.LetterName s.Name)))
     		<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)>'F' ()
     		(e.variables)(e.alphabet) s.Next e.Rest>;
     /* не закончили буквенную и идем дальше */
-	Started (e.Result) 'TFT' e.LetterName (e.variables)(e.alphabet) s.Name s.Name2 e.Rest
+	Started (e.Result) 'TFT' (e.LetterName) (e.variables)(e.alphabet) s.Name s.Name2 e.Rest
 		= <Translate Started (e.Result) 'TFT' (e.LetterName s.Name) (e.variables)(e.alphabet) s.Name2 e.Rest>;
 	/* переменная и дальше есть много всего */
 	Started (e.Result)'TFF' () (e.variables)(e.alphabet)s.Name's ' s.Next s.Next2 e.Rest
@@ -108,9 +112,9 @@ Translate {
 	/* получается флаг started не установлен */
 	s.Term s.Term2 e.Rest
 		= <Translate Started ()
-			<IfInSet s.Term(<Variables>)><IfInSet s.Term(<Alphabet>)><IfInSet s.Term(<Variables>)> ()
+			<IfInSet s.Term(<Variables>)><IfInSet s.Term(<Alphabet>)><IfInSet s.Term2(<Variables>)> ()
 			(<Variables>)(<Alphabet>) s.Term s.Term2 e.Rest>;
-	s.Term e.Rest = <Translate Started ( )
+	s.Term e.Rest = <Translate Started ()
 		<IfInSet s.Term(<Variables>)><IfInSet s.Term(<Alphabet>)>'F' ()
 		(<Variables>)(<Alphabet>) s.Term e.Rest>;
 }
@@ -181,17 +185,31 @@ Eq {
 	/* буквенная переменная */
 	((e.x't -> 's.Sym'') e.R1)(((var 't' (e.x)) e.LHS)(s.Sym e.RHS)) e.Other
 		= <Eq (e.R1) <Sim ()
-			((<subst (assign (var 't' (e.x))(s.Sym))((var 't' (e.x)))(e.LHS)>)
+			((<subst (assign (var 't' (e.x))(s.Sym))(/*Empty*/)(e.LHS)>)
             (<subst (assign (var 't' (e.x))(s.Sym))(/*Empty*/)(e.RHS)>))
             <subst_2 (assign (var 't' (e.x))(s.Sym))e.Other>
 		>>;
 	/* буквенная переменная */
 	((e.x't -> 's.Sym'') e.R1)((s.Sym e.LHS)((var 't' (e.x)) e.RHS)) e.Other
-    		= <Eq (e.R1) <Sim ()
-    			((<subst (assign (var 't' (e.x))(s.Sym))(/*Empty*/)(e.LHS)>)
-    			(<subst (assign (var 't' (e.x))(s.Sym))((var 't' (e.x)))(e.RHS)>))
-    			<subst_2 (assign (var 't' (e.x))(s.Sym))e.Other>
-    		>>;
+    	= <Eq (e.R1) <Sim ()
+    		((<subst (assign (var 't' (e.x))(s.Sym))(/*Empty*/)(e.LHS)>)
+    		(<subst (assign (var 't' (e.x))(s.Sym))(/*Empty*/)(e.RHS)>))
+    		<subst_2 (assign (var 't' (e.x))(s.Sym))e.Other>
+    	>>;
+    /* буквенная переменная */
+   	((e.x't -> 'e.y't') e.R1)(((var 't' (e.x)) e.LHS)((var 't' (e.y)) e.RHS)) e.Other
+   		= <Eq (e.R1) <Sim ()
+   			((<subst (assign (var 't' (e.x))(var 't' (e.y)))(/*Empty*/)(e.LHS)>)
+               (<subst (assign (var 't' (e.x))(var 't' (e.y)))(/*Empty*/)(e.RHS)>))
+               <subst_2 (assign (var 't' (e.x))(var 't' (e.y)))e.Other>
+   		>>;
+   	/* буквенная переменная */
+   	((e.y't -> 'e.x't') e.R1)(((var 't' (e.x)) e.LHS)((var 't' (e.y)) e.RHS)) e.Other
+   		= <Eq (e.R1) <Sim ()
+   			((<subst (assign (var 't' (e.y))(var 't' (e.x)))(/*Empty*/)(e.LHS)>)
+               (<subst (assign (var 't' (e.y))(var 't' (e.x)))(/*Empty*/)(e.RHS)>))
+               <subst_2 (assign (var 't' (e.y))(var 't' (e.x)))e.Other>
+   		>>;
 	/* 7. Во всех прочих случаях считаем, что шаг решения уравнения невозможен. */
 	(e.R1)e.Other = False;
 }
@@ -356,14 +374,16 @@ Include {
 		= (e.Prev ((var 'e' s.name) e.Counter'I') e.Rest);
 	/* 3. Очередной элемент мультимножества не является счетчиком вхождений данной e-переменной: делаем шаг по мультимножеству. */
 	(var 'e' s.name)(e.Prev)(t.Other e.MS) = <Include (var 'e' s.name)(e.Prev t.Other)(e.MS)>;
+	 /* 4. Во всем мультимножестве не нашлось элементов, считающих вхождения данной e-переменной: заводим для нее новый счетчик со значением 1
+      и помещаем его в начало мультимножества. */
+	(var 'e' s.name)(e.Prev)(/* EMPTY */) = (((var 'e' s.name) 'I') e.Prev);
 	/**/
 	(var 't' (e.name))(e.Prev)(((var 't' (e.Name)) e.Counter) e.Rest)
     	= (e.Prev ((var 't' (e.Name)) e.Counter'I') e.Rest);
 	/**/
 	(var 't' (e.name))(e.Prev)(t.Other e.MS) = <Include (var 't' (e.name))(e.Prev t.Other)(e.MS)>;
-	 /* 4. Во всем мультимножестве не нашлось элементов, считающих вхождения данной e-переменной: заводим для нее новый счетчик со значением 1
-      и помещаем его в начало мультимножества. */
-	(var 'e' s.name)(e.Prev)(/* EMPTY */) = (((var 'e' s.name) 'I') e.Prev);
+	/**/
+	(var 't' (e.name))(e.Prev)(/* EMPTY */) = (((var 't' (e.name)) 'I') e.Prev);
 }
 
 /* Вспомогательная функция проверки равенства двух мультимножеств.
