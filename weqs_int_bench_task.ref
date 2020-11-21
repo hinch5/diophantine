@@ -2,11 +2,17 @@
 *$MATCHING ForRepeatedSpecialization;
 *$STRATEGY Applicative;
 
-$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}
+/*$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}*/
 
 /*$ENTRY GO {e.x = <Print <Decode (<Conc ('ABt  =') ' CBt' >)>> ;}*/
 
 /*$ENTRY Go {  = <Print <Eq (('ABt -> a')) <Print <Sim ( ) <Print <Decode (<Conc ('ABt =') ' a'>)>>>>>>;}*/
+
+/*$ENTRY Go { = <Print <FindMaxNameT () <Sim ( ) <Print <Decode (<Conc ('ABCDDt =') ' a'>)>> <Print <Decode (<Conc ('ABCDCt =') ' a'>)>> >>>};*/
+
+/*$ENTRY GO {e.x = <Print <Decode (<Conc ('ABt  =') ' CBt' >)>> ;}*/
+
+$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('As Cs =') ' Cs Cs a'>)> <Decode (<Conc ('As ABCDCt =') ' Cs a'>)> > >>;}
 
 /* Auxiliary function concatenating too long input strings.*/
 Conc {(e.1) e.2 = e.1 e.2;}
@@ -82,7 +88,7 @@ Translate {
 	/* переменная и дальше есть много всего */
 	Started (e.Result)'TFF' () (e.variables)(e.alphabet)s.Name's ' s.Next s.Next2 e.Rest
     		= <Translate Started (e.Result (var 'e' s.Name))
-    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSet s.Next(e.variables)> ()
+    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSet s.Next2(e.variables)> ()
     			(e.variables)(e.alphabet) s.Next s.Next2 e.Rest>;
 	/* переменная и дальше мало всего */
 	Started (e.Result)'TFF' () (e.variables)(e.alphabet)s.Name's ' s.Next e.Rest
@@ -92,12 +98,12 @@ Translate {
 	/* s переменная и дальше есть много всего */
 	Started (e.Result)'TFF' () (e.variables)(e.alphabet)s.Name' 's.Next s.Next2 e.Rest
 		= <Translate Started (e.Result (var 's' s.Name))
-			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSet s.Next(e.variables)> ()
+			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSet s.Next2(e.variables)> ()
 			(e.variables)(e.alphabet)s.Next s.Next2 e.Rest>;
 	/* s переменная и дальше мало всего */
 	Started (e.Result)'TFF' () (e.variables)(e.alphabet)s.Name' 's.Next e.Rest
     		= <Translate Started (e.Result (var 's' s.Name))
-    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSet s.Next(e.variables)> ()
+    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)>'F' ()
     			(e.variables)(e.alphabet)s.Next e.Rest>;
 	/* константа и дальше много всего */
 	Started (e.Result)'FTF'()(e.variables)(e.alphabet)s.Name' 's.Next s.Next2 e.Rest
@@ -210,7 +216,7 @@ Eq {
                (<subst (assign (var 't' (e.y))(var 't' (e.x)))(/*Empty*/)(e.RHS)>))
                <subst_2 (assign (var 't' (e.y))(var 't' (e.x)))e.Other>
    		>>;
-	/* 7. Во всех прочих случаях считаем, что шаг решения уравнения невозможен. */
+	/* 7. Во всех прочих случаях считаем, что шаг решения уравнения невозможен. (здесь сделать вызов дио) */
 	(e.R1)e.Other = False;
 }
 
@@ -559,4 +565,164 @@ AddElsToMS {
 /*********************************************************************************************************************/
 /*                                              Буквенные переменные                                                 */
 /*********************************************************************************************************************/
-/* буквенной переменной будем считать последовательность двух заглавных букв, заканчивающася на t */
+/* буквенной переменной будем считать последовательность из минимум двух заглавных букв, заканчивающася на t */
+
+/* Вспомогательная функция поиска максимальной t переменной */
+FindMaxNameT {
+	(e.Max)(((var 't' (e.name)) e.LHS)(e.RHS)) e.Other = <FindMaxNameT (<SelectMax ((e.name)) <CompareNamesT (e.name) (e.Max)> (e.Max)>) ((e.LHS)(e.RHS)) e.Other>;
+	(e.Max)((e.LHS)((var 't' (e.name)) e.RHS)) e.Other = <FindMaxNameT (<SelectMax ((e.name)) <CompareNamesT (e.name) (e.Max)> (e.Max)>) ((e.LHS)(e.RHS)) e.Other>;
+	(e.Max)((t.Any e.LHS)(t.Any2 e.RHS)) e.Other = <FindMaxNameT (e.Max) ((e.LHS)(e.RHS)) e.Other>;
+	(e.Max)((t.Any e.LHS)()) e.Other = <FindMaxNameT (e.Max) ((e.LHS)()) e.Other>;
+	(e.Max)(()(t.Any e.RHS)) e.Other = <FindMaxNameT (e.Max) (()(e.RHS)) e.Other>;
+	(e.Max)((/*EMPTY*/)(/*EMPTY*/)) e.Other = <FindMaxNameT (e.Max) e.Other>;
+	(e.Max) /* EMPTY */ = e.Max;
+}
+
+SelectMax {
+	((e.Current) (e.Next) e.Other) 'G' (e.Max) = <SelectMax ((e.Next) e.Other) <CompareNamesT (e.Next) (e.Current)> (e.Current)>;
+    ((e.Current) (e.Next) e.Other) s.Log (e.Max) = <SelectMax ((e.Next) e.Other) <CompareNamesT (e.Next) (e.Max)> (e.Max)>;
+	((e.Current)) 'G' (e.Max) = e.Current;
+	((e.Current)) s.Log (e.Max) = e.Max;
+}
+
+/*Функция сравнения 2 имен буквенных переменных*/
+CompareNamesT {
+	(s.Sym e.x) (s.Sym e.y) 'E' = <CompareNamesT (e.x) (e.y) 'E'>;
+	(s.Sym e.x) (s.Sym2 e.y) 'E' = <CompareNamesT (e.x) (e.y) <CompareLetters s.Sym s.Sym2>>;
+	(s.Sym e.x) (s.Sym2 e.y) s.Log = <CompareNamesT (e.x) (e.y) s.Log>;
+	(e.x) (/* EMPTY */) s.Log = 'G';
+	(/* EMPTY */) (e.y) s.Log = 'L';
+	(/* EMPTY */) (/* EMPTY */) s.Log = s.Log;
+	(s.Sym e.x) (s.Sym e.y) = <CompareNamesT (e.x) (e.y) 'E'>;
+	(s.Sym e.x) (s.Sym2 e.y) = <CompareNamesT (e.x) (e.y) <CompareLetters s.Sym s.Sym2>>;
+	(/**/) (e.x) = 'L';
+	(e.x) (/**/) = 'G';
+	() () = 'E';
+}
+
+/*генерация следующего имени переменной (генерация размещений с повторениями) */
+NextNameT {
+	(e.x'Z') e.Counter = <NextNameT (e.x) e.Counter'I'>;
+	(e.x s.Sym) e.Counter = e.x <IncSym s.Sym> <BuildNameA e.Counter>;
+	(/* EMPTY */) e.Counter = <BuildNameA e.Counter'I'>;
+	/* EMPTY */ = 'AA';
+	e.Name = <NextNameT (e.Name) ''>;
+}
+
+/*функция сравнения символов*/
+CompareLetters {
+	s.Sym s.Sym = 'E';
+	'B' 'A' = 'G';
+	'C' 'A' = 'G'; 'C' 'B' = 'G';
+	'D' 'A' = 'G'; 'D' 'B' = 'G'; 'D' 'C' = 'G';
+	'E' 'A' = 'G'; 'E' 'B' = 'G'; 'E' 'C' = 'G'; 'E' 'D' = 'G';
+	'F' 'A' = 'G'; 'F' 'B' = 'G'; 'F' 'C' = 'G'; 'F' 'D' = 'G'; 'F' 'E' = 'G';
+	'G' 'A' = 'G'; 'G' 'B' = 'G'; 'G' 'C' = 'G'; 'G' 'D' = 'G'; 'G' 'E' = 'G'; 'G' 'F' = 'G';
+	'H' 'A' = 'G'; 'H' 'B' = 'G'; 'H' 'C' = 'G'; 'H' 'D' = 'G'; 'H' 'E' = 'G'; 'H' 'F' = 'G'; 'H' 'G' = 'G';
+	'I' 'A' = 'G'; 'I' 'B' = 'G'; 'I' 'C' = 'G'; 'I' 'D' = 'G'; 'I' 'E' = 'G'; 'I' 'F' = 'G'; 'I' 'G' = 'G'; 'I' 'H' = 'G';
+	'J' 'A' = 'G'; 'J' 'B' = 'G'; 'J' 'C' = 'G'; 'J' 'D' = 'G'; 'J' 'E' = 'G'; 'J' 'F' = 'G'; 'J' 'G' = 'G'; 'J' 'H' = 'G'; 'J' 'I' = 'G';
+	'K' 'A' = 'G'; 'K' 'B' = 'G'; 'K' 'C' = 'G'; 'K' 'D' = 'G'; 'K' 'E' = 'G'; 'K' 'F' = 'G'; 'K' 'G' = 'G'; 'K' 'H' = 'G'; 'K' 'I' = 'G'; 'K' 'J' = 'G';
+	'L' 'A' = 'G'; 'L' 'B' = 'G'; 'L' 'C' = 'G'; 'L' 'D' = 'G'; 'L' 'E' = 'G'; 'L' 'F' = 'G'; 'L' 'G' = 'G'; 'L' 'H' = 'G'; 'L' 'I' = 'G'; 'L' 'J' = 'G'; 'L' 'K' = 'G';
+	'M' 'A' = 'G'; 'M' 'B' = 'G'; 'M' 'C' = 'G'; 'M' 'D' = 'G'; 'M' 'E' = 'G'; 'M' 'F' = 'G'; 'M' 'G' = 'G'; 'M' 'H' = 'G'; 'M' 'I' = 'G'; 'M' 'J' = 'G'; 'M' 'K' = 'G'; 'M' 'L' = 'G';
+	'N' 'A' = 'G'; 'N' 'B' = 'G'; 'N' 'C' = 'G'; 'N' 'D' = 'G'; 'N' 'E' = 'G'; 'N' 'F' = 'G'; 'N' 'G' = 'G'; 'N' 'H' = 'G'; 'N' 'I' = 'G'; 'N' 'J' = 'G'; 'N' 'K' = 'G'; 'N' 'L' = 'G'; 'N' 'M' = 'G';
+	'O' 'A' = 'G'; 'O' 'B' = 'G'; 'O' 'C' = 'G'; 'O' 'D' = 'G'; 'O' 'E' = 'G'; 'O' 'F' = 'G'; 'O' 'G' = 'G'; 'O' 'H' = 'G'; 'O' 'I' = 'G'; 'O' 'J' = 'G'; 'O' 'K' = 'G'; 'O' 'L' = 'G'; 'O' 'M' = 'G'; 'O' 'N' = 'G';
+	'P' 'A' = 'G'; 'P' 'B' = 'G'; 'P' 'C' = 'G'; 'P' 'D' = 'G'; 'P' 'E' = 'G'; 'P' 'F' = 'G'; 'P' 'G' = 'G'; 'P' 'H' = 'G'; 'P' 'I' = 'G'; 'P' 'J' = 'G'; 'P' 'K' = 'G'; 'P' 'L' = 'G'; 'P' 'M' = 'G'; 'P' 'N' = 'G'; 'P' 'O' = 'G';
+	'Q' 'A' = 'G'; 'Q' 'B' = 'G'; 'Q' 'C' = 'G'; 'Q' 'D' = 'G'; 'Q' 'E' = 'G'; 'Q' 'F' = 'G'; 'Q' 'G' = 'G'; 'Q' 'H' = 'G'; 'Q' 'I' = 'G'; 'Q' 'J' = 'G'; 'Q' 'K' = 'G'; 'Q' 'L' = 'G'; 'Q' 'M' = 'G'; 'Q' 'N' = 'G'; 'Q' 'O' = 'G'; 'Q' 'P' = 'G';
+	'R' 'A' = 'G'; 'R' 'B' = 'G'; 'R' 'C' = 'G'; 'R' 'D' = 'G'; 'R' 'E' = 'G'; 'R' 'F' = 'G'; 'R' 'G' = 'G'; 'R' 'H' = 'G'; 'R' 'I' = 'G'; 'R' 'J' = 'G'; 'R' 'K' = 'G'; 'R' 'L' = 'G'; 'R' 'M' = 'G'; 'R' 'N' = 'G'; 'R' 'O' = 'G'; 'R' 'P' = 'G'; 'R' 'Q' = 'G';
+	'S' 'A' = 'G'; 'S' 'B' = 'G'; 'S' 'C' = 'G'; 'S' 'D' = 'G'; 'S' 'E' = 'G'; 'S' 'F' = 'G'; 'S' 'G' = 'G'; 'S' 'H' = 'G'; 'S' 'I' = 'G'; 'S' 'J' = 'G'; 'S' 'K' = 'G'; 'S' 'L' = 'G'; 'S' 'M' = 'G'; 'S' 'N' = 'G'; 'S' 'O' = 'G'; 'S' 'P' = 'G'; 'S' 'Q' = 'G'; 'S' 'R' = 'G';
+	'T' 'A' = 'G'; 'T' 'B' = 'G'; 'T' 'C' = 'G'; 'T' 'D' = 'G'; 'T' 'E' = 'G'; 'T' 'F' = 'G'; 'T' 'G' = 'G'; 'T' 'H' = 'G'; 'T' 'I' = 'G'; 'T' 'J' = 'G'; 'T' 'K' = 'G'; 'T' 'L' = 'G'; 'T' 'M' = 'G'; 'T' 'N' = 'G'; 'T' 'O' = 'G'; 'T' 'P' = 'G'; 'T' 'Q' = 'G'; 'T' 'R' = 'G'; 'T' 'S' = 'G';
+	'U' 'A' = 'G'; 'U' 'B' = 'G'; 'U' 'C' = 'G'; 'U' 'D' = 'G'; 'U' 'E' = 'G'; 'U' 'F' = 'G'; 'U' 'G' = 'G'; 'U' 'H' = 'G'; 'U' 'I' = 'G'; 'U' 'J' = 'G'; 'U' 'K' = 'G'; 'U' 'L' = 'G'; 'U' 'M' = 'G'; 'U' 'N' = 'G'; 'U' 'O' = 'G'; 'U' 'P' = 'G'; 'U' 'Q' = 'G'; 'U' 'R' = 'G'; 'U' 'S' = 'G'; 'U' 'T' = 'G';
+	'V' 'A' = 'G'; 'V' 'B' = 'G'; 'V' 'C' = 'G'; 'V' 'D' = 'G'; 'V' 'E' = 'G'; 'V' 'F' = 'G'; 'V' 'G' = 'G'; 'V' 'H' = 'G'; 'V' 'I' = 'G'; 'V' 'J' = 'G'; 'V' 'K' = 'G'; 'V' 'L' = 'G'; 'V' 'M' = 'G'; 'V' 'N' = 'G'; 'V' 'O' = 'G'; 'V' 'P' = 'G'; 'V' 'Q' = 'G'; 'V' 'R' = 'G'; 'V' 'S' = 'G'; 'V' 'T' = 'G'; 'V' 'U' = 'G';
+	'W' 'A' = 'G'; 'W' 'B' = 'G'; 'W' 'C' = 'G'; 'W' 'D' = 'G'; 'W' 'E' = 'G'; 'W' 'F' = 'G'; 'W' 'G' = 'G'; 'W' 'H' = 'G'; 'W' 'I' = 'G'; 'W' 'J' = 'G'; 'W' 'K' = 'G'; 'W' 'L' = 'G'; 'W' 'M' = 'G'; 'W' 'N' = 'G'; 'W' 'O' = 'G'; 'W' 'P' = 'G'; 'W' 'Q' = 'G'; 'W' 'R' = 'G'; 'W' 'S' = 'G'; 'W' 'T' = 'G'; 'W' 'U' = 'G'; 'W' 'V' = 'G';
+	'X' 'A' = 'G'; 'X' 'B' = 'G'; 'X' 'C' = 'G'; 'X' 'D' = 'G'; 'X' 'E' = 'G'; 'X' 'F' = 'G'; 'X' 'G' = 'G'; 'X' 'H' = 'G'; 'X' 'I' = 'G'; 'X' 'J' = 'G'; 'X' 'K' = 'G'; 'X' 'L' = 'G'; 'X' 'M' = 'G'; 'X' 'N' = 'G'; 'X' 'O' = 'G'; 'X' 'P' = 'G'; 'X' 'Q' = 'G'; 'X' 'R' = 'G'; 'X' 'S' = 'G'; 'X' 'T' = 'G'; 'X' 'U' = 'G'; 'X' 'V' = 'G'; 'X' 'W' = 'G';
+	'Y' 'A' = 'G'; 'Y' 'B' = 'G'; 'Y' 'C' = 'G'; 'Y' 'D' = 'G'; 'Y' 'E' = 'G'; 'Y' 'F' = 'G'; 'Y' 'G' = 'G'; 'Y' 'H' = 'G'; 'Y' 'I' = 'G'; 'Y' 'J' = 'G'; 'Y' 'K' = 'G'; 'Y' 'L' = 'G'; 'Y' 'M' = 'G'; 'Y' 'N' = 'G'; 'Y' 'O' = 'G'; 'Y' 'P' = 'G'; 'Y' 'Q' = 'G'; 'Y' 'R' = 'G'; 'Y' 'S' = 'G'; 'Y' 'T' = 'G'; 'Y' 'U' = 'G'; 'Y' 'V' = 'G'; 'Y' 'W' = 'G'; 'Y' 'X' = 'G';
+	'Z' 'A' = 'G'; 'Z' 'B' = 'G'; 'Z' 'C' = 'G'; 'Z' 'D' = 'G'; 'Z' 'E' = 'G'; 'Z' 'F' = 'G'; 'Z' 'G' = 'G'; 'Z' 'H' = 'G'; 'Z' 'I' = 'G'; 'Z' 'J' = 'G'; 'Z' 'K' = 'G'; 'Z' 'L' = 'G'; 'Z' 'M' = 'G'; 'Z' 'N' = 'G'; 'Z' 'O' = 'G'; 'Z' 'P' = 'G'; 'Z' 'Q' = 'G'; 'Z' 'R' = 'G'; 'Z' 'S' = 'G'; 'Z' 'T' = 'G'; 'Z' 'U' = 'G'; 'Z' 'V' = 'G'; 'Z' 'W' = 'G'; 'Z' 'X' = 'G'; 'Z' 'Y' = 'G';
+	s.Sym s.Sym2 = 'L';
+}
+
+/*увелечение одного символа*/
+IncSym {
+	'A' = 'B';
+	'B' = 'C';
+	'C' = 'D';
+	'D' = 'E';
+	'E' = 'F';
+	'F' = 'G';
+	'G' = 'H';
+	'H' = 'I';
+	'I' = 'J';
+	'J' = 'K';
+	'K' = 'L';
+	'L' = 'M';
+	'M' = 'N';
+	'N' = 'O';
+	'O' = 'P';
+	'P' = 'Q';
+	'Q' = 'R';
+	'R' = 'S';
+	'S' = 'T';
+	'T' = 'U';
+	'U' = 'V';
+	'V' = 'W';
+	'W' = 'X';
+	'X' = 'Y';
+	'Y' = 'Z';
+}
+
+/*сбор строки A нужной длины для дописывания в конец*/
+BuildNameA {
+	(e.Result) /* EMPTY */ = '';
+	(e.Result) e.X'I' = <BuildNameA (e.Result 'A') e.X>;
+	e.X = <BuildNameA () e.X>
+}
+
+/*********************************************************************************************************************/
+/*                                              Диофантовы уравнения                                                 */
+/*********************************************************************************************************************/
+
+BuildMap {
+	() (e.Result) = e.Result;
+	(t.Any e.Rest) (e.Result) = <BuildMap (e.Rest) <AddToMap t.Any () (e.Result)>>;
+}
+
+AddToMap {
+	/* 1. Добавляется буква: увеличиваем счетчик констант, стоящий в мультимножестве всегда последним. */
+	s.Sym (e.Prev)(e.MS (Const t.Counter)) = (e.Prev e.MS (Const <Add t.Counter 1>));
+	/* 2. Добавляется очередное вхождение уже присутствующей в мультимножестве e-переменной: увеличиваем соответствующий счетчик. */
+	(var 'e' s.name)(e.Prev)(((var 'e' s.name) t.Counter) e.Rest)
+		= (e.Prev ((var 'e' s.name) <Add t.Counter 1>) e.Rest);
+	/* 3. Очередной элемент мультимножества не является счетчиком вхождений данной e-переменной: делаем шаг по мультимножеству. */
+	(var 'e' s.name)(e.Prev)(t.Other e.MS) = <AddToMap (var 'e' s.name)(e.Prev t.Other)(e.MS)>;
+	 /* 4. Во всем мультимножестве не нашлось элементов, считающих вхождения данной e-переменной: заводим для нее новый счетчик со значением 1
+      и помещаем его в начало мультимножества. */
+	(var 'e' s.name)(e.Prev)(/* EMPTY */) = (((var 'e' s.name) 1) e.Prev);
+	/**/
+	(var 't' (e.name))(e.Prev)(e.MS (Const t.Counter))
+    	= (e.Prev e.MS (Const <Add t.Counter 1>));
+}
+
+SubElement {
+/* 1. Счетчик констант всегда является последним элементом мультимножества, поэтому при вычитании элемента,
+      считающего константы, достаточно убедиться в совпадении количества вхождений букв и буквенных переменных. */
+	(Const t.Counter) (/* EMPTY */)(e.Rest (Const t.Counter2))
+		= e.Rest (Const <Sub t.Counter t.Counter2>);
+	/* 2. Если в мультимножестве нашелся счетчик нужной переменной – проверяем совпадение кратностей. */
+	((var 'e' s.name) t.Counter) (e.Rest)(((var 'e' s.name) t.Counter2) e.Next)
+		= e.Rest ((var 'e' s.name) <Sub t.Counter2 t.Counter>) e.Next;
+	/* 3. Пробегаем очередной элемент мультимножества, не являющийся искомым счетчиком. */
+	t.El (e.Rest)(t.Other e.Next)
+		= <SubElement t.El (e.Rest t.Other)(e.Next)>;
+	/* 4. Искомого счетчика не нашлось – возвращаем все просмотренное мультимножество и флаг FALSE с
+    указанием на то, что в мультимножестве не оказалось элемента с нужной кратностью. */
+	((var 'e' s.name) t.Counter) (e.Rest)(/* EMPTY */) = ((var 'e' s.name) <Sub 0 t.Counter>) e.Rest;
+}
+
+SubMaps {
+	(e.First) (t.Any e.Second) = <SubMaps (<SubElement  t.Any () (e.First)>) (e.Second)>;
+	(e.First) (/* EMPTY */) = e.First;
+}
+
+ToLengthSystemEquation {
+	(e.Result) ((e.LHS)(e.RHS)) e.Rest = <ToLengthSystemEquation (e.Result (<SubMaps (<BuildMap (e.LHS) ((Const 0))>) (<BuildMap (e.RHS) ((Const 0))>)>)) e.Rest>;
+	(e.Result) = e.Result;
+}
