@@ -12,7 +12,7 @@
 
 /*$ENTRY GO {e.x = <Print <Decode (<Conc ('ABt  =') ' CBt' >)>> ;}*/
 
-$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('As Cs =') ' Cs Cs a'>)> <Decode (<Conc ('As ABCDCt =') ' Cs a'>)> > >>;}
+$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('As Cs =') ' Cs Cs a'>)> <Decode (<Conc ('Ds ABCDCt =') ' Es a'>)> > >>;}
 
 /* Auxiliary function concatenating too long input strings.*/
 Conc {(e.1) e.2 = e.1 e.2;}
@@ -680,49 +680,152 @@ BuildNameA {
 /*                                              Диофантовы уравнения                                                 */
 /*********************************************************************************************************************/
 
+/*сборка мапа с счетчиками переменных*/
 BuildMap {
+	/*закончили*/
 	() (e.Result) = e.Result;
+	/*докидываем один элемент*/
 	(t.Any e.Rest) (e.Result) = <BuildMap (e.Rest) <AddToMap t.Any () (e.Result)>>;
 }
 
+/*добавление элемента в мап (добавление или удаление счетчика)*/
 AddToMap {
-	/* 1. Добавляется буква: увеличиваем счетчик констант, стоящий в мультимножестве всегда последним. */
+	/*увеличиваем счетчик константы*/
 	s.Sym (e.Prev)(e.MS (Const t.Counter)) = (e.Prev e.MS (Const <Add t.Counter 1>));
-	/* 2. Добавляется очередное вхождение уже присутствующей в мультимножестве e-переменной: увеличиваем соответствующий счетчик. */
-	(var 'e' s.name)(e.Prev)(((var 'e' s.name) t.Counter) e.Rest)
+	/*увеличиваем счетчик переменной*/
+	(var 'e' s.name)(e.Prev)(((var 'e' s.name)  t.Counter) e.Rest)
 		= (e.Prev ((var 'e' s.name) <Add t.Counter 1>) e.Rest);
-	/* 3. Очередной элемент мультимножества не является счетчиком вхождений данной e-переменной: делаем шаг по мультимножеству. */
+	/*идет дальше и ищем*/
 	(var 'e' s.name)(e.Prev)(t.Other e.MS) = <AddToMap (var 'e' s.name)(e.Prev t.Other)(e.MS)>;
-	 /* 4. Во всем мультимножестве не нашлось элементов, считающих вхождения данной e-переменной: заводим для нее новый счетчик со значением 1
-      и помещаем его в начало мультимножества. */
+	/*перменная не найдена - добавляем*/
 	(var 'e' s.name)(e.Prev)(/* EMPTY */) = (((var 'e' s.name) 1) e.Prev);
-	/**/
+	/*t-переменная. увеличиваем счетчик констант*/
 	(var 't' (e.name))(e.Prev)(e.MS (Const t.Counter))
     	= (e.Prev e.MS (Const <Add t.Counter 1>));
 }
 
+/*вычитание из множества счетчиков*/
 SubElement {
-/* 1. Счетчик констант всегда является последним элементом мультимножества, поэтому при вычитании элемента,
-      считающего константы, достаточно убедиться в совпадении количества вхождений букв и буквенных переменных. */
+	/*константа*/
 	(Const t.Counter) (/* EMPTY */)(e.Rest (Const t.Counter2))
 		= e.Rest (Const <Sub t.Counter t.Counter2>);
-	/* 2. Если в мультимножестве нашелся счетчик нужной переменной – проверяем совпадение кратностей. */
+	/*переменная*/
 	((var 'e' s.name) t.Counter) (e.Rest)(((var 'e' s.name) t.Counter2) e.Next)
 		= e.Rest ((var 'e' s.name) <Sub t.Counter2 t.Counter>) e.Next;
-	/* 3. Пробегаем очередной элемент мультимножества, не являющийся искомым счетчиком. */
+	/*продолжение поиска*/
 	t.El (e.Rest)(t.Other e.Next)
 		= <SubElement t.El (e.Rest t.Other)(e.Next)>;
-	/* 4. Искомого счетчика не нашлось – возвращаем все просмотренное мультимножество и флаг FALSE с
-    указанием на то, что в мультимножестве не оказалось элемента с нужной кратностью. */
+	/*не найдено, добавить с отрицательным счетчиком */
 	((var 'e' s.name) t.Counter) (e.Rest)(/* EMPTY */) = ((var 'e' s.name) <Sub 0 t.Counter>) e.Rest;
 }
 
+/*разность мапов счетчиков*/
 SubMaps {
+	/*итерация по 2-му мапу*/
 	(e.First) (t.Any e.Second) = <SubMaps (<SubElement  t.Any () (e.First)>) (e.Second)>;
-	(e.First) (/* EMPTY */) = e.First;
+	/*закончили - выходим*/
+	(e.First) (/* EMPTY */) = (e.First);
 }
 
+/*перевод системы уравнений в систему уравнений на длины*/
 ToLengthSystemEquation {
-	(e.Result) ((e.LHS)(e.RHS)) e.Rest = <ToLengthSystemEquation (e.Result (<SubMaps (<BuildMap (e.LHS) ((Const 0))>) (<BuildMap (e.RHS) ((Const 0))>)>)) e.Rest>;
-	(e.Result) = e.Result;
+	/*переводим очередное уравнение*/
+	(e.Result) ((e.LHS)(e.RHS)) e.Rest = <ToLengthSystemEquation (e.Result <SubMaps (<BuildMap (e.LHS) ((Const 0))>) (<BuildMap (e.RHS) ((Const 0))>)>) e.Rest>;
+	/*закончили - дополняем все уравнения нехватающими переменными и сортируем*/
+	(e.Result) = <FillAll () (e.Result) <BuildAllMap (e.Result) ()>>;
+}
+
+/*добавление нехватающей переменной (конкретный элемент)*/
+FillMissingVar {
+	((var 'e' s.Name) t.Counter) (e.Processed) (((var 'e' s.Name) t.Counter2) e.Left) = (e.Processed ((var 'e' s.Name) t.Counter2) e.Left);
+	((var 'e' s.Name) '-' t.Counter) (e.Processed) (((var 'e' s.Name) t.Counter2) e.Left) = (e.Processed ((var 'e' s.Name) t.Counter2) e.Left);
+	((var 'e' s.Name) t.Counter) (e.Processed) (((var 'e' s.Name) '-' t.Counter2) e.Left) = (e.Processed ((var 'e' s.Name) '-' t.Counter2) e.Left);
+	((var 'e' s.Name) '-' t.Counter) (e.Processed) (((var 'e' s.Name) '-' t.Counter2) e.Left) = (e.Processed ((var 'e' s.Name) '-' t.Counter2) e.Left);
+
+	((var 'e' s.Name) t.Counter) (e.Processed) (t.Var e.Left) = <FillMissingVar ((var 'e' s.Name) t.Counter) (e.Processed t.Var) (e.Left)>;
+	((var 'e' s.Name) t.Counter) (e.Processed) () = (((var 'e' s.Name) 0) e.Processed);
+
+	((var 'e' s.Name) '-' t.Counter) (e.Processed) (t.Var e.Left) = <FillMissingVar ((var 'e' s.Name) '-' t.Counter) (e.Processed t.Var) (e.Left)>;
+	((var 'e' s.Name) '-' t.Counter) (e.Processed) () = (((var 'e' s.Name) 0) e.Processed);
+}
+
+/*добавление из множества*/
+FillMissing {
+	(e.Eq) (((var 'e' s.Name) t.Counter) e.Left) = <FillMissing <FillMissingVar ((var 'e' s.Name) t.Counter) () (e.Eq)> (e.Left)>;
+	(e.Eq) (((var 'e' s.Name) '-' t.Counter) e.Left) = <FillMissing <FillMissingVar ((var 'e' s.Name) '-' t.Counter) () (e.Eq)> (e.Left)>;
+	(e.Eq) () = (e.Eq);
+}
+
+/*добавление нехватающих переменных к каждому уравнению*/
+FillAll {
+	(e.Result) ((e.Current) e.Left) (e.Set)= <FillAll (e.Result <SortVars () () <FillMissing (e.Current) (e.Set)>>) (e.Left) (e.Set)>;
+	(e.Result) () (e.Set) = e.Result;
+}
+
+/*сбор множества всех переменных (одно уравнение)*/
+BuildAllMap2 {
+	(((var 'e' s.Name) e.Any) e.Current) (e.VarSet) = <BuildAllMap2 (e.Current) <AddToMap (var 'e' s.Name) () (e.VarSet)>>;
+	() (e.VarSet) = (e.VarSet);
+}
+
+/*сбор множества всех переменных (несколько уравнений)*/
+BuildAllMap {
+	((e.Current (Const e.Any)) e.Left) (e.VarSet) = <BuildAllMap (e.Left) <BuildAllMap2 (e.Current) (e.VarSet)>>;
+	() (e.VarSet) = (e.VarSet);
+}
+
+/*поиск макимальной переменной*/
+FindMaxVar {
+	() (e.Set (Const e.Any)) = <FindMaxVar () (e.Set)>;
+	() (((var 'e' s.Name) t.Counter) e.Left) = <FindMaxVar ((var 'e' s.Name) t.Counter) (((var 'e' s.Name) t.Counter) e.Left)>;
+	() (((var 'e' s.Name) '-' t.Counter) e.Left) = <FindMaxVar ((var 'e' s.Name) '-' t.Counter) (((var 'e' s.Name) '-' t.Counter) e.Left)>;
+
+	((var 'e' s.Name) t.Counter) (((var 'e' s.Name2) t.Counter2) e.Left) = <FindMaxVar <SelectMaxLetter ((var 'e' s.Name) t.Counter) ((var 'e' s.Name2) t.Counter2)>  (e.Left)>;
+	((var 'e' s.Name) '-' t.Counter) (((var 'e' s.Name2) t.Counter2) e.Left) = <FindMaxVar <SelectMaxLetter ((var 'e' s.Name) '-' t.Counter) ((var 'e' s.Name2) t.Counter2)>  (e.Left)>;
+	((var 'e' s.Name) t.Counter) (((var 'e' s.Name2) '-' t.Counter2) e.Left) = <FindMaxVar <SelectMaxLetter ((var 'e' s.Name) t.Counter) ((var 'e' s.Name2) '-' t.Counter2)>  (e.Left)>;
+	((var 'e' s.Name) '-' t.Counter) (((var 'e' s.Name2) '-' t.Counter2) e.Left) = <FindMaxVar <SelectMaxLetter ((var 'e' s.Name) '-' t.Counter) ((var 'e' s.Name2) '-' t.Counter2)>  (e.Left)>;
+
+	((var 'e' s.Name) t.Counter) () = ((var 'e' s.Name) t.Counter);
+	((var 'e' s.Name) '-' t.Counter) () = ((var 'e' s.Name) '-' t.Counter);
+}
+
+/*выбор наибольшей переменной*/
+SelectMaxLetter {
+	((var 'e' s.Name) t.Counter) ((var 'e' s.Name2) t.Counter2) = <SelectMaxLetter ((var 'e' s.Name) t.Counter) ((var 'e' s.Name2) t.Counter2) <CompareLetters s.Name s.Name2>>;
+	((var 'e' s.Name) t.Counter) ((var 'e' s.Name2) t.Counter2) 'L' = ((var 'e' s.Name2) t.Counter2);
+	((var 'e' s.Name) t.Counter) ((var 'e' s.Name2) t.Counter2) s.Log = ((var 'e' s.Name) t.Counter);
+
+	((var 'e' s.Name) '-' t.Counter) ((var 'e' s.Name2) t.Counter2) = <SelectMaxLetter ((var 'e' s.Name) '-' t.Counter) ((var 'e' s.Name2) t.Counter2) <CompareLetters s.Name s.Name2>>;
+    ((var 'e' s.Name) '-' t.Counter) ((var 'e' s.Name2) t.Counter2) 'L' = ((var 'e' s.Name2) t.Counter2);
+    ((var 'e' s.Name) '-' t.Counter) ((var 'e' s.Name2) t.Counter2) s.Log = ((var 'e' s.Name) '-' t.Counter);
+
+    ((var 'e' s.Name) t.Counter) ((var 'e' s.Name2) '-' t.Counter2) = <SelectMaxLetter ((var 'e' s.Name) t.Counter) ((var 'e' s.Name2) '-' t.Counter2) <CompareLetters s.Name s.Name2>>;
+    ((var 'e' s.Name) t.Counter) ((var 'e' s.Name2) '-' t.Counter2) 'L' = ((var 'e' s.Name2) '-' t.Counter2);
+    ((var 'e' s.Name) t.Counter) ((var 'e' s.Name2) '-' t.Counter2) s.Log = ((var 'e' s.Name) t.Counter);
+
+    ((var 'e' s.Name) '-' t.Counter) ((var 'e' s.Name2) '-' t.Counter2) = <SelectMaxLetter ((var 'e' s.Name) '-' t.Counter) ((var 'e' s.Name2) '-' t.Counter2) <CompareLetters s.Name s.Name2>>;
+    ((var 'e' s.Name) '-' t.Counter) ((var 'e' s.Name2) '-' t.Counter2) 'L' = ((var 'e' s.Name2) '-' t.Counter2);
+    ((var 'e' s.Name) '-' t.Counter) ((var 'e' s.Name2) '-' t.Counter2) s.Log = ((var 'e' s.Name) '-' t.Counter);
+}
+
+/*удаляем из списка последнюю переменную*/
+ExtractMaxVar {
+	((var 'e' s.Name) t.Counter) (e.Processed) (((var 'e' s.Name) t.Counter) e.Next) = (e.Processed e.Next);
+	((var 'e' s.Name) '-' t.Counter) (e.Processed) (((var 'e' s.Name) '-' t.Counter) e.Next) = (e.Processed e.Next);
+	((var 'e' s.Name) t.Counter) (e.Processed) (t.Var e.Next) = <ExtractMaxVar ((var 'e' s.Name) t.Counter) (e.Processed t.Var) (e.Next)>;
+	((var 'e' s.Name) '-' t.Counter) (e.Processed) (t.Var e.Next) = <ExtractMaxVar ((var 'e' s.Name) '-' t.Counter) (e.Processed t.Var) (e.Next)>;
+}
+
+/*сортируем одно уравнение*/
+SortVars {
+	() (e.Processed) ((Const '-' t.Counter)) = (e.Processed (Const '-' t.Counter));
+	() (e.Processed) ((Const t.Counter)) = (e.Processed (Const t.Counter));
+	() (e.Processed) (e.Left) = <SortVars <FindMaxVar () (e.Left)> (e.Processed) (e.Left)>;
+	((var 'e' s.Name) t.Counter) (e.Processed) (e.Left) = <SortVars () (e.Processed ((var 'e' s.Name) t.Counter)) <ExtractMaxVar ((var 'e' s.Name) t.Counter) () (e.Left)>>;
+	((var 'e' s.Name) '-' t.Counter) (e.Processed) (e.Left) = <SortVars () (e.Processed ((var 'e' s.Name) '-' t.Counter)) <ExtractMaxVar ((var 'e' s.Name) '-' t.Counter) () (e.Left)>>;
+}
+
+SortAll {
+	(e.Result) ((e.Current) e.Left) = <SortAll (e.Result <SortVars () () (e.Current)>)>;
+	(e.Result) () = e.Result;
 }
