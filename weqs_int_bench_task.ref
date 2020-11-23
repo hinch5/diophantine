@@ -14,7 +14,11 @@
 
 /*$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('As Cs =') ' Cs Cs a'>)> <Decode (<Conc ('Ds ABCDCt =') ' Es a'>)> > >>;}*/
 
-$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('As As As As As Bs Bs Bs Bs Bs Bs Cs Cs Cs Cs Cs Cs Cs Cs =') ' a'>)> <Decode (<Conc ('As As As As As As Cs Cs Cs Cs Cs Cs Cs =') ' a a a a a a a a a Bs Bs Bs Bs Bs Bs Bs Bs Bs Bs Bs'>)> > >>;}
+/*$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('As As As As As Bs Bs Bs Bs Bs Bs Cs Cs Cs Cs Cs Cs Cs Cs =') ' a'>)> <Decode (<Conc ('As As As As As As Cs Cs Cs Cs Cs Cs Cs =') ' a a a a a a a a a Bs Bs Bs Bs Bs Bs Bs Bs Bs Bs Bs'>)> > >>;}*/
+
+/*$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('As c c As b c c Bs =') ' Cs c c As b Ds b c Cs c As'>)>  > >>;}*/
+
+$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('Cs a a a b a b Cs b b Cs a b b a b b a b b a b a b b Cs a b a a a a b a a a a b Cs b b b b a b b b a b a a a b b Cs b Cs a a b a b a b a a b a a a b a a b b b a a a b b =') ' b a Fs Cs b b a a a a b a b a b a a Cs a Cs b b Cs a b b'>)>  > >>;}
 
 /*$ENTRY GO {e.x = <Print <Mul ('-' 1 ) 5>> ;}*/
 
@@ -715,7 +719,7 @@ SubElement {
 		= e.Rest (Const (<Sub t.Counter t.Counter2>));
 	/*переменная*/
 	((var 'e' s.name) (t.Counter)) (e.Rest)(((var 'e' s.name) (t.Counter2)) e.Next)
-		= e.Rest ((var 'e' s.name) <Sub (t.Counter2) (t.Counter)>) e.Next;
+		= e.Rest ((var 'e' s.name) <SubUnwrap (t.Counter2) (t.Counter)>) e.Next;
 	/*продолжение поиска*/
 	t.El (e.Rest)(t.Other e.Next)
 		= <SubElement t.El (e.Rest t.Other)(e.Next)>;
@@ -840,7 +844,7 @@ BuildEMatrix {
 SolveSystem {
 	(e.System) = <SolveSystem (e.System) <BuildAllMap (e.System) ()>>;
 	(e.System) (e.AllSet) = <SolveSystem (<FillAll () (e.System) (e.AllSet)>) () (e.AllSet) <BuildEMatrix 0 <SetSize (e.AllSet) 0> '-' ()>>;
-	(e.System) (e.Processed) (e.AllSet) (e.Matrix) = <SolveSystem <Print Started <MakeRowEchelon <MatrixFromMaps () (e.System)> (e.Matrix) <SetSize (e.System) 0>> (e.AllSet) <GetRHS (e.System) ()>>>;
+	(e.System) (e.Processed) (e.AllSet) (e.Matrix) = <SolveSystem  Started <MakeRowEchelon <MatrixFromMaps () (e.System)> (e.Matrix) <SetSize (e.System) 0>> (e.AllSet) <GetRHS (e.System) ()>>;
 	Started (e.System) (e.Matrix) (e.AllSet) (e.RHS)
 		= <ChooseK
 			<TransposeMatrix () (e.Matrix)>
@@ -876,8 +880,9 @@ GetByIndex {
 }
 
 GetByIndexIfNotZero {
-	(e.Row) t.Ind t.CurrentInd = <GetByIndex (e.Row) t.Ind t.CurrentInd <Compare t.Ind t.CurrentInd>>;
-	(0) = ;
+	(e.Row) t.Ind t.CurrentInd = <GetByIndexIfNotZero <GetByIndex (e.Row) t.Ind t.CurrentInd <Compare t.CurrentInd t.Ind>>>;
+	(0 ) =;
+	0 = ;
 	t.Result = t.Result;
 }
 
@@ -903,16 +908,16 @@ Min {
 
 FindMin {
 	((e.Row) e.System) t.Count t.Current () '-' = <FindMin (e.System) t.Count <Add t.Current 1> () <Compare t.Count <Add t.Current 1>>>;
-	((e.Row) e.System) t.Count t.Current () '0' = <FindMin (e.System) t.Count <Add t.Current 1> (<GetByIndex (e.Row) t.Count 0> t.Current) '+'>;
+	((e.Row) e.System) t.Count t.Current () '0' = <FindMin (e.System) t.Count <Add t.Current 1> (<GetByIndexIfNotZero (e.Row) t.Count 0> t.Current) '+'>;
+	((e.Row) e.System) t.Count t.Current (t.MinIndex) s.Log = <FindMin (e.System) t.Count <Add t.Current 1> (<GetByIndexIfNotZero (e.Row) t.Count 0> t.Current) '+'>;
 	((e.Row) e.System) t.Count t.Current (t.CurrentMin t.MinIndex) s.Log = <FindMin (e.System) t.Count <Add t.Current 1> (<Min (t.CurrentMin t.MinIndex) (<GetByIndex (e.Row) t.Count 0> t.Current)>) s.Log>;
 	() t.Count t.Current (t.CurrentMin t.MinIndex) s.Log = (t.CurrentMin t.MinIndex);
 }
 
 CalcMultiplier {
-	(t.Value) (t.ToSubValue) = ('-' <Div t.Value t.ToSubValue>);
-	('-' t.Value) (t.ToSubValue) = (<Div t.Value t.ToSubValue>);
-	(t.Value) ('-' t.ToSubValue) = (<Div t.Value t.ToSubValue>);
-	('-' t.Value) ('-' t.ToSubValue) = ('-' <Div t.Value t.ToSubValue>);
+	t.Value t.ToSubValue = <CalcMultiplier <DivUnwrap t.Value t.ToSubValue>>;
+	('-' t.Value) = (t.Value);
+	(t.Value) = ('-' t.Value);
 }
 
 AddUnwrap {
@@ -934,6 +939,20 @@ MulUnwrap {
 	('-' t.First) (t.Second) = ('-' <Mul t.First t.Second>);
 	(t.First) ('-' t.Second) = ('-' <Mul t.First t.Second>);
 	('-' t.First) ('-' t.Second) = (<Mul t.First t.Second>);
+}
+
+ModUnwrap {
+	(t.First) (t.Second) = (<Mod t.First t.Second>);
+	('-' t.First) (t.Second) = (<Mod t.First t.Second>);
+	(t.First) ('-' t.Second) = (<Mod t.First t.Second>);
+	('-' t.First) ('-' t.Second) = (<Mod t.First t.Second>);
+}
+
+DivUnwrap {
+	(t.Value) (t.ToSubValue) = (<Div t.Value t.ToSubValue>);
+	('-' t.Value) (t.ToSubValue) = ('-' <Div t.Value t.ToSubValue>);
+	(t.Value) ('-' t.ToSubValue) = ('-' <Div t.Value t.ToSubValue>);
+	('-' t.Value) ('-' t.ToSubValue) = (<Div t.Value t.ToSubValue>);
 }
 
 ReplaceElement {
@@ -1078,9 +1097,8 @@ BuildK {
 }
 
 AddToKOrStop {
-	(e.Processed) (e.Left) s.Var (t.C) t.Value = <AddToKOrStop (e.Processed) (e.Left) s.Var t.C t.Value <Compare <Mod t.Value t.C> 0>>;
-	(e.Processed) (e.Left) s.Var t.C t.Value = <AddToKOrStop (e.Processed) (e.Left) s.Var t.C <Compare <Mod t.Value t.C> 0>>;
-	(e.Processed) (e.Left) s.Var t.C t.Value '0' = (e.Processed (s.Var (<Div t.Value t.C>)) e.Left);
+	(e.Processed) (e.Left) s.Var t.C t.Value = <AddToKOrStop (e.Processed) (e.Left) s.Var t.C t.Value <Compare <ModUnwrap t.Value t.C> 0>>;
+	(e.Processed) (e.Left) s.Var t.C t.Value '0' = (e.Processed (s.Var <DivUnwrap t.Value t.C>) e.Left);
 	(e.Processed) (e.Left) s.Var t.C t.Value s.Log = False;
 }
 
