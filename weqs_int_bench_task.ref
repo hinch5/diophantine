@@ -215,7 +215,13 @@ Eq {
                <subst_2 (assign (var 't' s.x6 s.x7 s.x8 s.x9 s.x10)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5))e.Other>
    		>>;
 	/* 7. Во всех прочих случаях считаем, что шаг решения уравнения невозможен. (здесь сделать вызов дио) */
-	(e.R1)e.Other = False;
+	(e.R1)e.Other = <Eq (e.R1) <DiophantineSolve (e.Other)>>;
+}
+
+DiophantineWrapper {
+	(e.R1) (e.System) = <DiophantineWrapper Solved (e.R1) (<DiophantineSolve (e.System)>)>;
+	Solved (e.R1) False = False;
+	Solved (e.R1) (e.System) = <Eq (e.R1) e.System>
 }
 
 /* Функция подстановки в выражение имеет входной формат:
@@ -575,7 +581,7 @@ FindMaxNameT {
 	(e.Max)((t.Any e.LHS)()) e.Other = <FindMaxNameT (e.Max) ((e.LHS)()) e.Other>;
 	(e.Max)(()(t.Any e.RHS)) e.Other = <FindMaxNameT (e.Max) (()(e.RHS)) e.Other>;
 	(e.Max)((/*EMPTY*/)(/*EMPTY*/)) e.Other = <FindMaxNameT (e.Max) e.Other>;
-	(e.Max) /* EMPTY */ = e.Max;
+	(e.Max) /* EMPTY */ = (e.Max);
 }
 
 SelectMax {
@@ -704,7 +710,10 @@ DiophantineSolve {
 			<TransposeMatrix () (e.Matrix)>
 			<FindK <TransposeMatrix () (e.RowEchelon)> (e.RHS)>>;
 	X (e.System) (e.AllSet) (e.Matrix) False = False;
-	X (e.System) (e.AllSet) (e.Matrix) (e.K) = (e.Matrix) (e.K);
+	X (e.System) (e.AllSet) (e.Matrix) (e.K) = <DiophantineSolve Assign (e.System) (e.AllSet) (e.Matrix) (e.K) <CalcSolution (e.Matrix) (e.AllSet) (e.K)>>;
+	Assign (e.System) (e.AllSet) (e.Matrix) (e.K) False = False;
+	Assign (e.System) (e.AllSet) (e.Matrix) (e.K) (e.Result) = <DiophantineSolve Apply (e.System) (e.Result)>;
+	Apply (e.System) (e.Solution) = <ApplySolution (e.System) (e.Solution)>;
 }
 
 /*сборка мапа с счетчиками переменных*/
@@ -779,7 +788,7 @@ FillMissing {
 
 /*добавление нехватающих переменных к каждому уравнению*/
 FillAll {
-	(e.Result) ((e.Current) e.Left) (e.Set)= <FillAll (e.Result <SortVars () () <FillMissing (e.Current) (e.Set)>>) (e.Left) (e.Set)>;
+	(e.Result) ((e.Current) e.Left) (e.Set)= <FillAll (e.Result <SortVars <FillMissing (e.Current) (e.Set)>>) (e.Left) (e.Set)>;
 	(e.Result) () (e.Set) = e.Result;
 }
 
@@ -792,7 +801,7 @@ BuildAllMap2 {
 /*сбор множества всех переменных (несколько уравнений)*/
 BuildAllMap {
 	((e.Current (Const e.Any)) e.Left) (e.VarSet) = <BuildAllMap (e.Left) <BuildAllMap2 (e.Current) (e.VarSet)>>;
-	() (e.VarSet) = (e.VarSet);
+	() (e.VarSet) = <SortVars (e.VarSet)>;
 }
 
 /*поиск макимальной переменной*/
@@ -821,8 +830,10 @@ ExtractMaxVar {
 
 /*сортируем одно уравнение*/
 SortVars {
+	(e.Vars) = <SortVars () () (e.Vars)>;
 	() (e.Processed) ((Const t.Counter)) = (e.Processed (Const t.Counter));
 	() (e.Processed) (e.Left) = <SortVars <FindMinVar () (e.Left)> (e.Processed) (e.Left)>;
+	((var 'e' s.Name) t.Counter) (e.Processed) (((var 'e' s.Name) t.Counter2)) = (e.Processed ((var 'e' s.Name) t.Counter));
 	((var 'e' s.Name) t.Counter) (e.Processed) (e.Left) = <SortVars () (e.Processed ((var 'e' s.Name) t.Counter)) <ExtractMaxVar ((var 'e' s.Name) t.Counter) () (e.Left)>>;
 }
 
@@ -969,6 +980,13 @@ DivUnwrap {
 	('-' t.Value) (t.ToSubValue) = ('-' <Div t.Value t.ToSubValue>);
 	(t.Value) ('-' t.ToSubValue) = ('-' <Div t.Value t.ToSubValue>);
 	('-' t.Value) ('-' t.ToSubValue) = (<Div t.Value t.ToSubValue>);
+}
+
+CmpUnwrap {
+	(t.First) (t.Second) = <Compare t.First t.Second>;
+	('-' t.First) (t.Second) = '-';
+	(t.First) ('-' t.Second) = '+';
+	('-' t.First) ('-' t.Second) = <Compare t.Second t.First>;
 }
 
 ReplaceElement {
@@ -1161,4 +1179,73 @@ FindK {
 ChooseK {
 	(e.Matrix) False = False;
 	(e.Matrix) (e.K) = (e.Matrix) (e.K);
+}
+
+MultiplyRowColumn {
+	(e.Row) (e.K) = <MultiplyRowColumn (e.Row) (e.K) (0)>;
+	() () t.Value = t.Value <Compare t.Value 0>;
+	((0) e.Row) ((s.Name e.Any) e.K) t.Value = <MultiplyRowColumn (e.Row) (e.K) t.Value>;
+	(t.A e.Row) ((s.Name) e.K) t.Value = 'U';
+	(t.A e.Row) ((s.Name t.K) e.K) t.Value = <MultiplyRowColumn (e.Row) (e.K) <AddUnwrap t.Value <MulUnwrap t.A t.K>>>;
+}
+
+FilterSolutions {
+	(e.List) = <FilterSolutions () (e.List)>;
+	(e.Result) ((s.Name ('U')) e.Rest) = <FilterSolutions (e.Result) (e.Rest)>;
+	(e.Result) ((s.Name (t.Value '-')) e.Rest) = False;
+	(e.Result) ((s.Name (t.Value s.Log)) e.Rest) = <FilterSolutions (e.Result (s.Name t.Value)) (e.Rest)>;
+	(e.Result) () = (e.Result);
+}
+
+CalcSolution {
+	((e.Row) e.Matrix) (((var 'e' s.Name) e.Any) e.AllVars) (e.K) = <CalcSolution () (e.Matrix) (e.AllVars) (e.K) s.Name (<MultiplyRowColumn (e.Row) (e.K)>)>;
+	(e.Result) ((e.Row) e.Matrix) (((var 'e' s.Name2) e.Any) e.AllVars) (e.K) s.Name t.Value = <CalcSolution (e.Result (s.Name t.Value)) (e.Matrix) (e.AllVars) (e.K) s.Name2 (<MultiplyRowColumn (e.Row) (e.K)>)>;
+	(e.Result) () () (e.K) s.Name t.Value = <FilterSolutions (e.Result (s.Name t.Value))>
+}
+
+FindInSolution {
+	((s.Name t.Any) e.Solution) s.Name = t.Any;
+	((s.Name2 t.Any) e.Solution) s.Name = <FindInSolution (e.Solution) s.Name>;
+	() s.Name = ();
+}
+
+GenerateLetterVars {
+	(t.Count) (s.x1 s.x2 s.x3 s.x4 s.x5) = <GenerateLetterVars t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	t.Count (s.x1 s.x2 s.x3 s.x4 s.x5) = <GenerateLetterVars () (<NextNameT s.x1 s.x2 s.x3 s.x4 s.x5>) t.Count 1 <Compare 1 t.Count>>;
+	(e.Result) (s.x1 s.x2 s.x3 s.x4 s.x5) t.Count t.Current '-' = <GenerateLetterVars (e.Result (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) (<NextNameT s.x1 s.x2 s.x3 s.x4 s.x5>) t.Count <Add t.Current 1> <Compare <Add t.Current 1> t.Count>>;
+	(e.Result) (s.x1 s.x2 s.x3 s.x4 s.x5) t.Count t.Current '0' = (e.Result (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) (s.x1 s.x2 s.x3 s.x4 s.x5);
+}
+
+TryFirstReplaceDifferent {
+	(e.System) s.Name s.Name2 t.Diff (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplaceDifferent RE (e.System) s.Name s.Name2 <GenerateLetterVars t.Diff (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
+	RE (e.System) s.Name s.Name2 (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = <Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.Name2) e.List))>>;
+}
+
+TryFirstReplaceIfHasSolution {
+	(e.System) s.Name s.Name2 (t.Count1) (t.Count2) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplaceIfHasSolution s.Name s.Name2 <SubUnwrap t.Count1 t.Count2> <CmpUnwrap t.Count1 t.Count2> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	(e.System) s.Name s.Name2 (t.Count) () (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.System);
+	(e.System) s.Name s.Name2 () (t.Count) (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.System);
+	(e.System) s.Name s.Name2 () () (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.System);
+	(e.System) s.Name s.Name2 ('-' t.Diff) '-' (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplaceDifferent (e.System) s.Name2 s.Name t.Diff (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	(e.System) s.Name s.Name2 t.Diff '0' (s.x1 s.x2 s.x3 s.x4 s.x5) = (<Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.Name2)))e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	(e.System) s.Name s.Name2 t.Diff '+' (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplaceDifferent (e.System) s.Name s.Name2 t.Diff (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+}
+
+TryFirstReplace {
+	((e.First) e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplace Started (e.System) (e.First) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Started (e.System) (((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplaceIfHasSolution ((((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System) s.Name s.Name2 <FindInSolution (e.Solution) s.Name> <FindInSolution (e.Solution) s.Name2> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Started (e.System) ((e.LHS)(e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = (((e.LHS)(e.RHS)) e.System) (s.x1 s.x2 s.x3 s.x4 s.x5);
+}
+
+ReplaceSingle {
+	(e.System) s.Name t.Count (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle RE (e.System) s.Name <GenerateLetterVars t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
+	RE (e.System) s.Name (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = (<Sim () <subst_2 (assign (var 'e' s.Name)(e.List)) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
+}
+
+ApplySolution {
+	(e.System) (e.Solution) = <ApplySolution (e.Solution) (e.System) <FindMaxNameT () e.System>>;
+	(e.Solution) (e.System) () = <ApplySolution (e.Solution) (e.System) ('AAAAA')>;
+	(e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution Replace (e.Solution) <TryFirstReplace (e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
+	Replace ((s.Name t.Count) e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution (e.Solution) <ReplaceSingle (e.System) s.Name t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
+	Replace () (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = e.System;
 }
