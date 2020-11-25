@@ -688,13 +688,13 @@ IncSym {
 DiophantineSolve {
 	(e.System) = <DiophantineSolve BuildSet (e.System) <ToLengthSystemEquation () e.System>>;
 	BuildSet (e.System) (e.Decoded) = <DiophantineSolve FillSystem (e.System) (e.Decoded) <BuildAllMap (e.Decoded) ()>>;
-	FillSystem (e.System) (e.Decoded) (e.AllSet)
+	FillSystem (e.System) (e.Decoded) (e.AllSet) t.Size
 		= <DiophantineSolve
 			RE
 			(e.System)
 			(e.AllSet)
 			(<FillAll () (e.Decoded) (e.AllSet)>)
-			<BuildEMatrix 0 <SetSize (e.AllSet) 0> '-' ()>>;
+			<BuildEMatrix 0 t.Size <Compare 0 t.Size> ()>>;
 	RE (e.System) (e.AllSet) (e.Filled) (e.Matrix) =
 		<DiophantineSolve
 			K
@@ -801,7 +801,7 @@ BuildAllMap2 {
 /*сбор множества всех переменных (несколько уравнений)*/
 BuildAllMap {
 	((e.Current (Const e.Any)) e.Left) (e.VarSet) = <BuildAllMap (e.Left) <BuildAllMap2 (e.Current) (e.VarSet)>>;
-	() (e.VarSet) = <SortVars (e.VarSet)>;
+	() (e.VarSet) = <SortVars (e.VarSet)> <SetSize (e.VarSet) 0>;
 }
 
 /*поиск макимальной переменной*/
@@ -830,6 +830,7 @@ ExtractMaxVar {
 
 /*сортируем одно уравнение*/
 SortVars {
+	() = ();
 	(e.Vars) = <SortVars () () (e.Vars)>;
 	() (e.Processed) ((Const t.Counter)) = (e.Processed (Const t.Counter));
 	() (e.Processed) (e.Left) = <SortVars <FindMinVar () (e.Left)> (e.Processed) (e.Left)>;
@@ -877,6 +878,7 @@ GetRHS {
 
 /*получение транспонированного ряда*/
 MakeTransponentRow {
+	(e.Truncated) (e.Result) (((Const t.Count2)) e.Rest) = ();
 	(e.Truncated) (e.Result) ((((var 'e' s.Name) t.Count) (Const t.Count2)) e.Rest) = <MakeTransponentRow (e.Truncated) (e.Result t.Count) (e.Rest)>;
 	(e.Truncated) (e.Result) ((((var 'e' s.Name) t.Count) e.Eq) e.Rest) = <MakeTransponentRow (e.Truncated (e.Eq)) (e.Result t.Count) (e.Rest)>;
 	(e.Truncated) (e.Result) () = (e.Truncated) (e.Result);
@@ -884,6 +886,7 @@ MakeTransponentRow {
 
 /*получение матрицы из системы уравнений*/
 MatrixFromMaps {
+	() () = ();
 	(e.Result) (e.System) = <MatrixFromMaps () <MakeTransponentRow () () (e.System)>>;
 	(e.Result) () (e.Row) = (e.Result (e.Row));
 	(e.Result) (e.System) (e.Row) = <MatrixFromMaps (e.Result (e.Row)) <MakeTransponentRow () () (e.System)>>;
@@ -1116,6 +1119,7 @@ IsComplete {
 
 /*приводим матрицы к нужному виду*/
 MakeRowEchelon {
+	() () = () ();
 	(e.System) (e.Matrix)  = <MakeRowEchelon (e.System) (e.Matrix) 0 0 <RowsQty (e.System)> <ColumnsQty (e.System)> '-' '-'>;
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns = <MakeRowEchelon (e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns <Compare t.CurrentRow t.Rows> <Compare t.CurrentColumn t.Columns>>;
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns '0' s.Log = (e.System) (e.Matrix);
@@ -1144,6 +1148,7 @@ MakeTransponentRowMatrix {
 
 /*получение матрицы из системы уравнений*/
 TransposeMatrix {
+	() () = ();
 	(e.Result) (e.System) = <TransposeMatrix () <MakeTransponentRowMatrix () () (e.System)>>;
 	(e.Result) () (e.Row) = (e.Result (e.Row));
 	(e.Result) (e.System) (e.Row) = <TransposeMatrix (e.Result (e.Row)) <MakeTransponentRowMatrix () () (e.System)>>;
@@ -1170,6 +1175,7 @@ CalculateK {
 }
 
 FindK {
+	() (e.RHS) = ();
 	(e.Matrix) (e.RHS) = <FindK (e.Matrix) (e.RHS) <BuildK <ColumnsQty (e.Matrix)>>>;
 	((e.Row) e.Matrix) (t.Value e.RHS) (e.K) = <FindK (e.Matrix) (e.RHS) <CalculateK (e.Row) () (e.K) t.Value>>;
 	(e.Matrix) (e.RHS) False = False;
@@ -1198,6 +1204,7 @@ FilterSolutions {
 }
 
 CalcSolution {
+	() () () = ();
 	((e.Row) e.Matrix) (((var 'e' s.Name) e.Any) e.AllVars) (e.K) = <CalcSolution () (e.Matrix) (e.AllVars) (e.K) s.Name (<MultiplyRowColumn (e.Row) (e.K)>)>;
 	(e.Result) ((e.Row) e.Matrix) (((var 'e' s.Name2) e.Any) e.AllVars) (e.K) s.Name t.Value = <CalcSolution (e.Result (s.Name t.Value)) (e.Matrix) (e.AllVars) (e.K) s.Name2 (<MultiplyRowColumn (e.Row) (e.K)>)>;
 	(e.Result) () () (e.K) s.Name t.Value = <FilterSolutions (e.Result (s.Name t.Value))>
