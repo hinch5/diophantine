@@ -2,36 +2,7 @@
 *$MATCHING ForRepeatedSpecialization;
 *$STRATEGY Applicative;
 
-/*$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}*/
-
-/*$ENTRY GO {e.x = <Print <Decode (<Conc ('ABt  =') ' CBt' >)>> ;}*/
-
-/*$ENTRY Go {  = <Print <Eq (('ABt -> a')) <Print <Sim ( ) <Print <Decode (<Conc ('ABt =') ' a'>)>>>>>>;}*/
-
-/*$ENTRY Go { = <Print <FindMaxNameT () <Sim ( ) <Print <Decode (<Conc ('ABCDDt =') ' a'>)>> <Print <Decode (<Conc ('ABCDCt =') ' a'>)>> >>>};*/
-
-/*$ENTRY GO {e.x = <Print <Decode (<Conc ('ABt  =') ' CBt' >)>> ;}*/
-
-/*$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('As Cs =') ' Cs Cs a'>)> <Decode (<Conc ('Ds ABCDCt =') ' Es a'>)> > >>;}*/
-
-/*$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('As As As As As Bs Bs Bs Bs Bs Bs Cs Cs Cs Cs Cs Cs Cs Cs =') ' a'>)> <Decode (<Conc ('As As As As As As Cs Cs Cs Cs Cs Cs Cs =') ' a a a a a a a a a Bs Bs Bs Bs Bs Bs Bs Bs Bs Bs Bs'>)> > >>;}*/
-
-/*$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('As c c As b c c Bs =') ' Cs c c As b Ds b c Cs c As'>)>  > >>;}*/
-
-/*$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( ) <Decode (<Conc ('Cs a a a b a b Cs b b Cs a b b a b b a b b a b a b b Cs a b a a a a b a a a a b Cs b b b b a b b b a b a a a b b Cs b Cs a a b a b a b a a b a a a b a a b b b a a a b b =') ' b a Fs Cs b b a a a a b a b a b a a Cs a Cs b b Cs a b b'>)>  > >>;}*/
-
-$ENTRY Go { = <Print <ToLengthSystemEquation () <Sim ( )
-                                                   <Decode (<Conc ('a f c c f c f c a b c b a Is Fs a f b e c b e c e d c d  =')
-                                                  ' a f Ds a As c d' >)>
-                                                   <Decode (<Conc ('c e a c a b Is e c Bs c f Fs e d d e d f e a e b a c b d d c Is e a  =')
-                                                  ' c e a c a Is Is e Gs e a e Is a c b d d c b e a' >)>
-                                                   <Decode (<Conc ('f a f e f e f a c c c e d a b e d d f e d c Is a f Is b f f a f e a e e d d d e d  =')
-                                                  ' f a f e f e f a c c c e d a Is e d d f e d c b a As b f f a f e a e e d d d e d' >)>
-                                                   <Decode (<Conc ('c a e c e Is b a d d e e a d b f c c f Is e f c c e c c a f a Is e e d f a a Is f e  =')
-                                                  ' c a e c e Is Is a d d e e a d b f c c As e f c c e c c a f a b e e d f a a b f e' >)>
-                                                   > >>;}
-
-/*$ENTRY GO {e.x = <Print <Mul ('-' 1 ) 5>> ;}*/
+$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}
 
 /* Auxiliary function concatenating too long input strings.*/
 Conc {(e.1) e.2 = e.1 e.2;}
@@ -63,6 +34,13 @@ IfInSet {
 	s.Term (s.OtherTerm e.Rest) = <IfInSet s.Term (e.Rest)>;
 }
 
+IfInSetMultiple {
+	(s.Value e.ToSearch) (e.List) = <IfInSetMultiple (e.ToSearch) (e.List) <IfInSet s.Value (e.List)>>;
+	(s.Value e.ToSearch) (e.List) 'T' = <IfInSetMultiple (e.ToSearch) (e.List) <IfInSet s.Value (e.List)>>;
+	(s.Value e.ToSearch) (e.List) 'F' = 'F';
+	() (e.List) 'T' = 'T';
+}
+
 /*
 раскодирование уравнения
  1. опциональный started
@@ -84,67 +62,64 @@ Translate {
 	/* срезаем пробел справа */
 	e.x' ' = <Translate e.x>;
 	/* окончание буквенной переменной */
-	Started (e.Result) 'TFT' (e.LetterName) (e.variables)(e.alphabet)s.Name't'
-		= e.Result (var 't' (e.LetterName s.Name));
+	Started (e.Result) 'TFT' (e.variables)(e.alphabet)s.Name s.Name2 s.Name3 s.Name4 s.Name5 't'
+		= e.Result (var 't' s.Name s.Name2 s.Name3 s.Name4 s.Name5);
 	/* получается, ласт элемент (переменная, не константа) */
-	Started (e.Result) 'TFF' () (e.variables)(e.alphabet)s.Name's'
+	Started (e.Result) 'TFF' (e.variables)(e.alphabet)s.Name's'
 		= e.Result (var 'e' s.Name);
 	/* получается, ласт элемент (переменная, не константа, без s на конце) */
-	Started (e.Result) 'TFF' () (e.variables)(e.alphabet)s.Name
+	Started (e.Result) 'TFF' (e.variables)(e.alphabet)s.Name
 		=  e.Result (var 's' s.Name);
 	/* получается, ласт элемент (константа) */
-	Started (e.Result)'FTF' () (e.variables)(e.alphabet)s.Name
+	Started (e.Result)'FTF' (e.variables)(e.alphabet)s.Name
 		= e.Result s.Name;
 	/* закончили буквенную и дальше есть много всего */
-	Started (e.Result) 'TFT' (e.LetterName) (e.variables)(e.alphabet) s.Name 't ' s.Next s.Next2 e.Rest
-		= <Translate Started (e.Result (var 't' (e.LetterName s.Name)))
-			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSet s.Next2(e.variables)> ()
-			(e.variables)(e.alphabet) s.Next s.Next2 e.Rest>;
+	Started (e.Result) 'TFT' (e.variables)(e.alphabet) s.Name s.Name2 s.Name3 s.Name4 s.Name5 't ' s.Next s.Next2 s.Next3 s.Next4 s.Next5 e.Rest
+		= <Translate Started (e.Result (var 't' s.Name s.Name2 s.Name3 s.Name4 s.Name5))
+			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSetMultiple (s.Next s.Next2 s.Next3 s.Next4 s.Next5) (e.variables)>
+			(e.variables)(e.alphabet) s.Next s.Next2 s.Next3 s.Next4 s.Next5 e.Rest>;
 	/* закончили буквенную и дальше есть один символ */
-    Started (e.Result) 'TFT' (e.LetterName) (e.variables)(e.alphabet) s.Name 't ' s.Next e.Rest
-    	= <Translate Started (e.Result (var 't' (e.LetterName s.Name)))
-    		<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)>'F' ()
+    Started (e.Result) 'TFT' (e.variables)(e.alphabet) s.Name s.Name2 s.Name3 s.Name4 s.Name5 't ' s.Next e.Rest
+    	= <Translate Started (e.Result (var 't' s.Name s.Name2 s.Name3 s.Name4 s.Name5))
+    		<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)>'F'
     		(e.variables)(e.alphabet) s.Next e.Rest>;
-    /* не закончили буквенную и идем дальше */
-	Started (e.Result) 'TFT' (e.LetterName) (e.variables)(e.alphabet) s.Name s.Name2 e.Rest
-		= <Translate Started (e.Result) 'TFT' (e.LetterName s.Name) (e.variables)(e.alphabet) s.Name2 e.Rest>;
 	/* переменная и дальше есть много всего */
-	Started (e.Result)'TFF' () (e.variables)(e.alphabet)s.Name's ' s.Next s.Next2 e.Rest
+	Started (e.Result)'TFF' (e.variables)(e.alphabet)s.Name's ' s.Next s.Next2 s.Next3 s.Next4 s.Next5 e.Rest
     		= <Translate Started (e.Result (var 'e' s.Name))
-    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSet s.Next2(e.variables)> ()
-    			(e.variables)(e.alphabet) s.Next s.Next2 e.Rest>;
+    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSetMultiple (s.Next s.Next2 s.Next3 s.Next4 s.Next5) (e.variables)>
+    			(e.variables)(e.alphabet) s.Next s.Next2 s.Next3 s.Next4 s.Next5 e.Rest>;
 	/* переменная и дальше мало всего */
-	Started (e.Result)'TFF' () (e.variables)(e.alphabet)s.Name's ' s.Next e.Rest
+	Started (e.Result)'TFF' (e.variables)(e.alphabet)s.Name's ' s.Next e.Rest
     		= <Translate Started (e.Result (var 'e' s.Name))
-    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)>'F' ()
+    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)>'F'
     			 (e.variables)(e.alphabet) s.Next e.Rest>;
 	/* s переменная и дальше есть много всего */
-	Started (e.Result)'TFF' () (e.variables)(e.alphabet)s.Name' 's.Next s.Next2 e.Rest
+	Started (e.Result)'TFF' (e.variables)(e.alphabet)s.Name' 's.Next s.Next2 s.Next3 s.Next4 s.Next5 e.Rest
 		= <Translate Started (e.Result (var 's' s.Name))
-			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSet s.Next2(e.variables)> ()
-			(e.variables)(e.alphabet)s.Next s.Next2 e.Rest>;
+			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSetMultiple (s.Next s.Next2 s.Next3 s.Next4 s.Next5) (e.variables)>
+			(e.variables)(e.alphabet)s.Next s.Next2 s.Next3 s.Next4 s.Next5 e.Rest>;
 	/* s переменная и дальше мало всего */
-	Started (e.Result)'TFF' () (e.variables)(e.alphabet)s.Name' 's.Next e.Rest
+	Started (e.Result)'TFF' (e.variables)(e.alphabet)s.Name' 's.Next e.Rest
     		= <Translate Started (e.Result (var 's' s.Name))
-    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)>'F' ()
+    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)>'F'
     			(e.variables)(e.alphabet)s.Next e.Rest>;
 	/* константа и дальше много всего */
-	Started (e.Result)'FTF'()(e.variables)(e.alphabet)s.Name' 's.Next s.Next2 e.Rest
+	Started (e.Result)'FTF'()(e.variables)(e.alphabet)s.Name' 's.Next s.Next2 s.Next3 s.Next4 s.Next5 e.Rest
 		= <Translate Started (e.Result s.Name)
-			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSet s.Next2(e.variables)> ()
-			(e.variables)(e.alphabet)s.Next s.Next2 e.Rest>;
+			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)><IfInSetMultiple (s.Next s.Next2 s.Next3 s.Next4 s.Next5)(e.variables)>
+			(e.variables)(e.alphabet)s.Next s.Next2 s.Next3 s.Next4 s.Next5 e.Rest>;
 	/* константа и дальше мало всего */
-	Started (e.Result)'FTF'()(e.variables)(e.alphabet)s.Name' 's.Next e.Rest
+	Started (e.Result)'FTF' (e.variables)(e.alphabet)s.Name' 's.Next e.Rest
     		= <Translate Started (e.Result s.Name)
-    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)>'F' ()
+    			<IfInSet s.Next(e.variables)><IfInSet s.Next(e.alphabet)>'F'
     			(e.variables)(e.alphabet)s.Next e.Rest>;
 	/* получается флаг started не установлен */
-	s.Term s.Term2 e.Rest
+	s.Term s.Term2 s.Term3 s.Term4 s.Term5 e.Rest
 		= <Translate Started ()
-			<IfInSet s.Term(<Variables>)><IfInSet s.Term(<Alphabet>)><IfInSet s.Term2(<Variables>)> ()
-			(<Variables>)(<Alphabet>) s.Term s.Term2 e.Rest>;
+			<IfInSet s.Term(<Variables>)><IfInSet s.Term(<Alphabet>)><IfInSetMultiple (s.Term s.Term2 s.Term3 s.Term4 s.Term5) (<Variables>)>
+			(<Variables>)(<Alphabet>) s.Term s.Term2 s.Term3 s.Term4 s.Term5 e.Rest>;
 	s.Term e.Rest = <Translate Started ()
-		<IfInSet s.Term(<Variables>)><IfInSet s.Term(<Alphabet>)>'F' ()
+		<IfInSet s.Term(<Variables>)><IfInSet s.Term(<Alphabet>)>'F'
 		(<Variables>)(<Alphabet>) s.Term e.Rest>;
 }
 
@@ -212,32 +187,32 @@ Eq {
 			<subst_2 (assign (var 'e' s.y)((var 'e' s.x)(var 'e' s.y)))e.Other>
 		>>;
 	/* буквенная переменная */
-	((e.x't -> 's.Sym'') e.R1)(((var 't' (e.x)) e.LHS)(s.Sym e.RHS)) e.Other
+	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.R1)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)(s.Sym e.RHS)) e.Other
 		= <Eq (e.R1) <Sim ()
-			((<subst (assign (var 't' (e.x))(s.Sym))(/*Empty*/)(e.LHS)>)
-            (<subst (assign (var 't' (e.x))(s.Sym))(/*Empty*/)(e.RHS)>))
-            <subst_2 (assign (var 't' (e.x))(s.Sym))e.Other>
+			((<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.LHS)>)
+            (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.RHS)>))
+            <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))e.Other>
 		>>;
 	/* буквенная переменная */
-	((e.x't -> 's.Sym'') e.R1)((s.Sym e.LHS)((var 't' (e.x)) e.RHS)) e.Other
+	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.R1)((s.Sym e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
     	= <Eq (e.R1) <Sim ()
-    		((<subst (assign (var 't' (e.x))(s.Sym))(/*Empty*/)(e.LHS)>)
-    		(<subst (assign (var 't' (e.x))(s.Sym))(/*Empty*/)(e.RHS)>))
-    		<subst_2 (assign (var 't' (e.x))(s.Sym))e.Other>
+    		((<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.LHS)>)
+    		(<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.RHS)>))
+    		<subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))e.Other>
     	>>;
     /* буквенная переменная */
-   	((e.x't -> 'e.y't') e.R1)(((var 't' (e.x)) e.LHS)((var 't' (e.y)) e.RHS)) e.Other
+   	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.x6 s.x7 s.x8 s.x9 s.x10't') e.R1)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10) e.RHS)) e.Other
    		= <Eq (e.R1) <Sim ()
-   			((<subst (assign (var 't' (e.x))(var 't' (e.y)))(/*Empty*/)(e.LHS)>)
-               (<subst (assign (var 't' (e.x))(var 't' (e.y)))(/*Empty*/)(e.RHS)>))
-               <subst_2 (assign (var 't' (e.x))(var 't' (e.y)))e.Other>
+   			((<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 't' s.x6 s.x7 s.x8 s.x9 s.x10))(/*Empty*/)(e.LHS)>)
+               (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 't' s.x6 s.x7 s.x8 s.x9 s.x10))(/*Empty*/)(e.RHS)>))
+               <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 't' s.x6 s.x7 s.x8 s.x9 s.x10))e.Other>
    		>>;
    	/* буквенная переменная */
-   	((e.y't -> 'e.x't') e.R1)(((var 't' (e.x)) e.LHS)((var 't' (e.y)) e.RHS)) e.Other
+   	((s.x6 s.x7 s.x8 s.x9 s.x10't -> 's.x1 s.x2 s.x3 s.x4 s.x5't') e.R1)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10) e.RHS)) e.Other
    		= <Eq (e.R1) <Sim ()
-   			((<subst (assign (var 't' (e.y))(var 't' (e.x)))(/*Empty*/)(e.LHS)>)
-               (<subst (assign (var 't' (e.y))(var 't' (e.x)))(/*Empty*/)(e.RHS)>))
-               <subst_2 (assign (var 't' (e.y))(var 't' (e.x)))e.Other>
+   			((<subst (assign (var 't' s.x6 s.x7 s.x8 s.x9 s.x10)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(/*Empty*/)(e.LHS)>)
+               (<subst (assign (var 't' s.x6 s.x7 s.x8 s.x9 s.x10)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(/*Empty*/)(e.RHS)>))
+               <subst_2 (assign (var 't' s.x6 s.x7 s.x8 s.x9 s.x10)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5))e.Other>
    		>>;
 	/* 7. Во всех прочих случаях считаем, что шаг решения уравнения невозможен. (здесь сделать вызов дио) */
 	(e.R1)e.Other = False;
@@ -252,7 +227,7 @@ subst {
 	(assign t.var (e.val))(e.Result) (/*EMPTY*/) = e.Result;
 	/* Правило подстановки, не накладывающее запрет на обобщение. */
 	(assign (var s.type s.n) (e.val))(e.Result) ((var s.type s.n) e.Rest) = <subst (assign (var s.type s.n) (e.val))(e.Result <Const__ e.val>) (e.Rest)>;
-	(assign (var 't' (e.name)) (e.val))(e.Result) ((var 't' (e.name)) e.Rest) = <subst (assign (var 't' (e.name)) (e.val))(e.Result <Const__ e.val>) (e.Rest)>;
+	(assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (e.val))(e.Result) ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.Rest) = <subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (e.val))(e.Result <Const__ e.val>) (e.Rest)>;
 	(assign t.var (e.val))(e.Result) (t.other e.Rest) = <subst (assign t.var (e.val))(e.Result t.other) (e.Rest)>;
 }
 
@@ -285,9 +260,9 @@ Sim {
       то s.x не совпадает с s.y): возвращаем противоречивое уравнение и удаляем все остальные уравнения из системы. */
 	(e.Processed)((e.LHS s.x)(e.RHS s.y)) e.Other = ((s.x)(s.y));
 	/**/
-	(e.Processed)(((var 't' (e.name)) e.LHS)((var 't' (e.name)) e.RHS)) e.Other = <Sim (e.Processed)((e.LHS)(e.RHS)) e.Other>;
+	(e.Processed)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other = <Sim (e.Processed)((e.LHS)(e.RHS)) e.Other>;
 	/**/
-	(e.Processed)((e.LHS (var 't' (e.name)))(e.RHS (var 't' (e.name)))) e.Other = <Sim (e.Processed)((e.LHS)(e.RHS)) e.Other>;
+	(e.Processed)((e.LHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(e.RHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Other = <Sim (e.Processed)((e.LHS)(e.RHS)) e.Other>;
 	/* 3. Уравнение не преобразовано к тривиальному противоречию, и сокращать больше нечего:
       пытаемся расщепить это уравнение и упрощаем остальные уравнения системы. */
 	(e.Processed)((e.x)(e.y)) e.Other = 
@@ -319,9 +294,9 @@ Sim2 {
 	/* 1б-right. Удаление одинаковых переменных. */
 	((e.LHS (var s.type s.n))(e.RHS (var s.type s.n))) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
 	/**/
-	(((var 't' (e.name)) e.LHS)((var 't' (e.name)) e.RHS)) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
+	(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
 	/**/
-	((e.LHS (var 't' (e.name)))(e.RHS (var 't' (e.name)))) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
+	((e.LHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(e.RHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
 	/* 2а. Уравнение преобразовано к тривиальному тождеству: возвращаем это тождество и упрощаем остальные уравнения в системе. */
 	((/* EMPTY */)(/* EMPTY */)) e.Other = ((/* EMPTY */)(/* EMPTY */)) <Sim2 e.Other>;
 	/* 2б-left. Уравнение преобразовано к тривиальному противоречию (поскольку предложение 2б находится ниже, чем 1а-left,
@@ -407,12 +382,12 @@ Include {
       и помещаем его в начало мультимножества. */
 	(var 'e' s.name)(e.Prev)(/* EMPTY */) = (((var 'e' s.name) 'I') e.Prev);
 	/**/
-	(var 't' (e.name))(e.Prev)(((var 't' (e.Name)) e.Counter) e.Rest)
-    	= (e.Prev ((var 't' (e.Name)) e.Counter'I') e.Rest);
+	(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(e.Prev)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.Counter) e.Rest)
+    	= (e.Prev ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.Counter'I') e.Rest);
 	/**/
-	(var 't' (e.name))(e.Prev)(t.Other e.MS) = <Include (var 't' (e.name))(e.Prev t.Other)(e.MS)>;
+	(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(e.Prev)(t.Other e.MS) = <Include (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(e.Prev t.Other)(e.MS)>;
 	/**/
-	(var 't' (e.name))(e.Prev)(/* EMPTY */) = (((var 't' (e.name)) 'I') e.Prev);
+	(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(e.Prev)(/* EMPTY */) = (((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) 'I') e.Prev);
 }
 
 /* Вспомогательная функция проверки равенства двух мультимножеств.
@@ -453,6 +428,8 @@ ElMinus {
 	/* 2. Если в мультимножестве нашелся счетчик нужной переменной – проверяем совпадение кратностей. */
 	((var 'e' s.name) e.Counter) (e.Rest)(((var 'e' s.name) e.Counter2) e.Next)
 		= e.Rest e.Next <CountMinus (var 'e' s.name)(e.Counter)(e.Counter2)>;
+	((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.Counter) (e.Rest)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.Counter2) e.Next)
+		= e.Rest e.Next <CountMinus (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(e.Counter)(e.Counter2)>;
 	/* 3. Пробегаем очередной элемент мультимножества, не являющийся искомым счетчиком. */
 	t.El (e.Rest)(t.Other e.Next)
 		= <ElMinus t.El (e.Rest t.Other)(e.Next)>;
@@ -588,7 +565,7 @@ AddElsToMS {
 /*********************************************************************************************************************/
 /*                                              Буквенные переменные                                                 */
 /*********************************************************************************************************************/
-/* буквенной переменной будем считать последовательность из минимум двух заглавных букв, заканчивающася на t */
+/* буквенной переменной будем считать последовательность из ровно 5 заглавных букв, заканчивающася на t */
 
 /* Вспомогательная функция поиска максимальной t переменной */
 FindMaxNameT {
@@ -627,9 +604,15 @@ CompareNamesT {
 NextNameT {
 	(e.x'Z') e.Counter = <NextNameT (e.x) e.Counter'I'>;
 	(e.x s.Sym) e.Counter = e.x <IncSym s.Sym> <BuildNameA e.Counter>;
-	(/* EMPTY */) e.Counter = <BuildNameA e.Counter'I'>;
-	/* EMPTY */ = 'AA';
+	/* EMPTY */ = 'AAAAA';
 	e.Name = <NextNameT (e.Name) ''>;
+}
+
+/*сбор строки A нужной длины для дописывания в конец*/
+BuildNameA {
+	(e.Result) /* EMPTY */ = '';
+	(e.Result) e.X'I' = <BuildNameA (e.Result 'A') e.X>;
+	e.X = <BuildNameA () e.X>
 }
 
 /*функция сравнения символов*/
@@ -692,16 +675,37 @@ IncSym {
 	'Y' = 'Z';
 }
 
-/*сбор строки A нужной длины для дописывания в конец*/
-BuildNameA {
-	(e.Result) /* EMPTY */ = '';
-	(e.Result) e.X'I' = <BuildNameA (e.Result 'A') e.X>;
-	e.X = <BuildNameA () e.X>
-}
-
 /*********************************************************************************************************************/
 /*                                              Диофантовы уравнения                                                 */
 /*********************************************************************************************************************/
+
+DiophantineSolve {
+	(e.System) = <DiophantineSolve BuildSet (e.System) <ToLengthSystemEquation () e.System>>;
+	BuildSet (e.System) (e.Decoded) = <DiophantineSolve FillSystem (e.System) (e.Decoded) <BuildAllMap (e.Decoded) ()>>;
+	FillSystem (e.System) (e.Decoded) (e.AllSet)
+		= <DiophantineSolve
+			RE
+			(e.System)
+			(e.AllSet)
+			(<FillAll () (e.Decoded) (e.AllSet)>)
+			<BuildEMatrix 0 <SetSize (e.AllSet) 0> '-' ()>>;
+	RE (e.System) (e.AllSet) (e.Filled) (e.Matrix) =
+		<DiophantineSolve
+			K
+			(e.System)
+			(e.AllSet)
+			<MakeRowEchelon <MatrixFromMaps () (e.Filled)> (e.Matrix)>
+			<GetRHS (e.Filled) ()>>;
+	K (e.System) (e.AllSet) (e.RowEchelon) (e.Matrix) (e.RHS) =
+		<DiophantineSolve
+			X
+			(e.System)
+			(e.AllSet)
+			<TransposeMatrix () (e.Matrix)>
+			<FindK <TransposeMatrix () (e.RowEchelon)> (e.RHS)>>;
+	X (e.System) (e.AllSet) (e.Matrix) False = False;
+	X (e.System) (e.AllSet) (e.Matrix) (e.K) = (e.Matrix) (e.K);
+}
 
 /*сборка мапа с счетчиками переменных*/
 BuildMap {
@@ -723,7 +727,7 @@ AddToMap {
 	/*перменная не найдена - добавляем*/
 	(var 'e' s.name)(e.Prev)(/* EMPTY */) = (((var 'e' s.name) (1)) e.Prev);
 	/*t-переменная. увеличиваем счетчик констант*/
-	(var 't' (e.name))(e.Prev)(e.MS (Const (t.Counter)))
+	(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(e.Prev)(e.MS (Const (t.Counter)))
     	= (e.Prev e.MS (Const (<Add t.Counter 1>)));
 }
 
@@ -755,7 +759,7 @@ ToLengthSystemEquation {
 	/*переводим очередное уравнение*/
 	(e.Result) ((e.LHS)(e.RHS)) e.Rest = <ToLengthSystemEquation (e.Result <SubMaps (<BuildMap (e.LHS) ((Const (0)))>) (<BuildMap (e.RHS) ((Const (0)))>)>) e.Rest>;
 	/*закончили - дополняем все уравнения нехватающими переменными и сортируем*/
-	(e.Result) = <SolveSystem (e.Result)>;
+	(e.Result) = (e.Result);
 }
 
 /*добавление нехватающей переменной (конкретный элемент)*/
@@ -853,17 +857,6 @@ BuildERow {
 BuildEMatrix {
 	t.Counter t.Size '0' (e.Result) = (e.Result);
 	t.Counter t.Size s.Log (e.Result) = <BuildEMatrix <Add t.Counter 1> t.Size <Compare <Add t.Counter 1> t.Size> (e.Result <BuildERow t.Counter t.Size 0 <Compare t.Counter 0> '-' ()>)>;
-}
-
-/*вызов решателя системы*/
-SolveSystem {
-	(e.System) = <SolveSystem (e.System) <BuildAllMap (e.System) ()>>;
-	(e.System) (e.AllSet) = <SolveSystem (<FillAll () (e.System) (e.AllSet)>) () (e.AllSet) <BuildEMatrix 0 <SetSize (e.AllSet) 0> '-' ()>>;
-	(e.System) (e.Processed) (e.AllSet) (e.Matrix) = <SolveSystem  Started <MakeRowEchelon <MatrixFromMaps () (e.System)> (e.Matrix)> (e.AllSet) <GetRHS (e.System) ()>>;
-	Started (e.System) (e.Matrix) (e.AllSet) (e.RHS)
-		= <ChooseK
-			<TransposeMatrix () (e.Matrix)>
-			<FindK <TransposeMatrix () (e.System)> (e.RHS) <BuildK <SetSize (e.AllSet) 0>>>>;
 }
 
 GetRHS {

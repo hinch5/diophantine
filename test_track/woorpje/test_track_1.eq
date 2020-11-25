@@ -1,4 +1,4 @@
 Variables {CA}
 Terminals {}
-Equation: ABt = a
+Equation: ABCDEt = a
 SatGlucose(100)
