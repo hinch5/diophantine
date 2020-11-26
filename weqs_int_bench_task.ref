@@ -712,6 +712,7 @@ DiophantineSolve {
 	X (e.System) (e.AllSet) (e.Matrix) False = False;
 	X (e.System) (e.AllSet) (e.Matrix) (e.K) = <DiophantineSolve Assign (e.System) (e.AllSet) (e.Matrix) (e.K) <CalcSolution (e.Matrix) (e.AllSet) (e.K)>>;
 	Assign (e.System) (e.AllSet) (e.Matrix) (e.K) False = False;
+	Assign (e.System) (e.AllSet) (e.Matrix) (e.K) () = False;
 	Assign (e.System) (e.AllSet) (e.Matrix) (e.K) (e.Result) = <DiophantineSolve Apply (e.System) (e.Result)>;
 	Apply (e.System) (e.Solution) = <ApplySolution (e.System) (e.Solution)>;
 }
