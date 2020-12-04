@@ -2,9 +2,9 @@
 *$MATCHING ForRepeatedSpecialization;
 *$STRATEGY Applicative;
 
-$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}*
+$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}
 
-/*$ENTRY Go {  = <Print <Eq (('Cs -> empty') ('As -> empty')) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>>;}*/
+/*$ENTRY Go {  = <Print <Eq (('As -> AAAABt As')('As -> empty')('AAAABt -> a')) <Sim ( ) <Decode (<Conc ('As =') ' a'>)>>>>;}*/
 
 /* Auxiliary function concatenating too long input strings.*/
 Conc {(e.1) e.2 = e.1 e.2;}
@@ -204,20 +204,20 @@ EqSubst {
             <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))e.Other>
    		>>;
    	/**/
-   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't 's.x's') e.R1)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 'e' s.x) e.RHS)) e.Other
+   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't ' s.x's') e.R1)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 'e' s.x) e.RHS)) e.Other
    		= <EqSubst (e.R1) <Sim ()
-   			((<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5)))(/*Empty*/)(e.LHS)>)
-            (<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5)))((var 'e' s.x))(e.RHS)>))
-            <subst_2 (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5)))e.Other>
+   			((<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))(/*Empty*/)(e.LHS)>)
+            (<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))((var 'e' s.x))(e.RHS)>))
+            <subst_2 (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))e.Other>
    		>>;
    	/**/
-   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't 's.x's') e.R1)(((var 's' s.x) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
+   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't ' s.x's') e.R1)(((var 'e' s.x) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
    		= <EqSubst (e.R1) <Sim ()
-   			((<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5)))((var 'e' s.x))(e.LHS)>)
-            (<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5)))(/*Empty*/)(e.RHS)>))
-            <subst_2 (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5)))e.Other>
+   			((<subst (assign (var 'e' s.x) ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))((var 'e' s.x))(e.LHS)>)
+            (<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))(/*Empty*/)(e.RHS)>))
+            <subst_2 (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))e.Other>
    		>>;
-	/* 7. Во всех прочих случаях считаем, что шаг решения уравнения невозможен. (здесь сделать вызов дио) */
+	/* 7. Во всех прочих случаях считаем, что шаг решения уравнения невозможен. */
 	(e.R1)e.Other = False;
 }
 
@@ -1244,7 +1244,7 @@ ReplaceSingle {
 	(e.System) s.Name (0) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle (e.System) s.Name 0 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 	(e.System) s.Name 0 (s.x1 s.x2 s.x3 s.x4 s.x5) = (<Sim () <subst_2 (assign (var 'e' s.Name)()) e.System> (((var 'e' s.Name))())>) (s.x1 s.x2 s.x3 s.x4 s.x5);
 	(e.System) s.Name t.Count (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle RE (e.System) s.Name <GenerateLetterVars t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
-	RE (e.System) s.Name (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = (<Sim () <subst_2 (assign (var 'e' s.Name)(e.List)) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	RE (e.System) s.Name (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = ((((var 'e' s.Name))(e.List)) <Sim () <subst_2 (assign (var 'e' s.Name)(e.List)) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
 }
 
 ApplySolution {
