@@ -24,7 +24,7 @@ fi
 
 grep "Equation" "$1_track/woorpje/$1_track_$2.eq" > tmp
 
-res="\$ENTRY Go\\n{  =\\n<Print <DiophantineSolve (<Sim ( )\\n"
+res="\$ENTRY Go\\n{  =\\n<Print <DiophantineSolve <Print (<Sim ( )\\n"
 
 while read -r line
 do
@@ -46,7 +46,7 @@ do
 done < tmp
 rm tmp
 
-res="$res >)>>;\\n}\\n"
+res="$res >)>>>;\\n}\\n"
 
 rm -r solutions/$1_track_$2
 mkdir -p solutions/$1_track_$2
