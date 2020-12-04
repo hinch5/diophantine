@@ -1153,8 +1153,8 @@ MakeRowEchelon {
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.CurrentColumn = (e.System) (e.Matrix);
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.CurrentRow t.Columns = (e.System) (e.Matrix);
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns = <MakeRowEchelon (e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns <MakeRowEchelonForColumn (e.System) (e.Matrix) t.CurrentRow t.CurrentColumn>>;
-	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns Zero (e.NewSystem) (e.NewMatrix) = (e.NewSystem) (e.Matrix);
-	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns NonZero (e.NewSystem) (e.NewMatrix) = (e.NewSystem) (e.Matrix);
+	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns Zero (e.NewSystem) (e.NewMatrix) = <MakeRowEchelon (e.NewSystem) (e.Matrix) t.CurrentRow <Add t.CurrentColumn 1> t.Rows t.Columns>;
+	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns NonZero (e.NewSystem) (e.NewMatrix) = <MakeRowEchelon (e.NewSystem) (e.Matrix) <Add t.CurrentRow 1> <Add t.CurrentColumn 1> t.Rows t.Columns>;
 }
 
 /*приводим матрицы к нужному виду*/
