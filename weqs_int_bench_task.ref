@@ -709,6 +709,7 @@ DiophantineSolve {
 	/*X (e.System) (e.AllSet) (e.Matrix) (e.K) = e.System;*/
 	X (e.System) (e.AllSet) (e.Matrix) (e.K) = <DiophantineSolve Assign (e.System) (e.AllSet) (e.Matrix) (e.K) <CalcSolution (e.Matrix) (e.AllSet) (e.K)>>;
 	Assign (e.System) (e.AllSet) (e.Matrix) (e.K) False = False;
+	/*Assign (e.System) (e.AllSet) (e.Matrix) (e.K) (e.Result) = e.System;*/
 	Assign (e.System) (e.AllSet) (e.Matrix) (e.K) (e.Result) = <DiophantineSolve Apply (e.System) (e.Result)>;
 	Apply (e.System) (e.Solution) = <ApplySolution (e.System) (e.Solution)>;
 }
@@ -922,15 +923,12 @@ MatrixFromMaps {
 GetByIndex {
 	(e.List) (t.Ind) = <GetByIndex (e.List) t.Ind 0>;
 	(e.List) t.Ind = <GetByIndex (e.List) t.Ind 0>;
-	(e.List) (t.Ind) t.CurrentInd = <GetByIndex (e.List) t.Ind t.CurrentInd <Compare t.CurrentInd t.Ind>>;
-	(e.List) t.Ind t.CurrentInd = <GetByIndex (e.List) t.Ind t.CurrentInd <Compare t.CurrentInd t.Ind>>;
-	(t.Current e.List) t.Ind t.CurrentInd '-' = <GetByIndex (e.List) t.Ind <Add t.CurrentInd 1> <Compare <Add t.CurrentInd 1> t.Ind>>;
-	(t.Current e.List) t.Ind t.CurrentInd '0' = t.Current;
+	(t.Current e.List) t.Ind t.Ind = t.Current;
+	(t.Current e.List) t.Ind t.CurrentInd = <GetByIndex (e.List) t.Ind <Add t.CurrentInd 1>>;
 }
 
 GetByIndexIfNotZero {
-	(e.Row) t.Ind = <GetByIndexIfNotZero (e.Row) t.Ind 0>;
-	(e.Row) t.Ind t.CurrentInd = <GetByIndexIfNotZero <GetByIndex (e.Row) t.Ind t.CurrentInd <Compare t.CurrentInd t.Ind>>>;
+	(e.Row) t.Ind = <GetByIndexIfNotZero <GetByIndex (e.Row) t.Ind >>;
 	(0 ) =;
 	0 = ;
 	t.Result = t.Result;
@@ -1194,19 +1192,28 @@ TransposeMatrix {
 	(e.Result) (e.System) (e.Row) = <TransposeMatrix (e.Result (e.Row)) <MakeTransponentRowMatrix () () (e.System)>>;
 }
 
+LetterByInd {
+	(e.List) (t.Count) = <LetterByInd (e.List) t.Count 0>;
+	(e.List) t.Count = <LetterByInd (e.List) t.Count 0>;
+	(s.A e.Rest) t.Count t.Count = s.A;
+	(s.A e.Rest) t.Count t.Current = <LetterByInd (e.Rest) t.Count <Add t.Current 1>>;
+}
+
 BuildK {
-	(t.Size) = <BuildK () 0 t.Size <Compare 0 t.Size>>;
-	t.Size = <BuildK () 0 t.Size <Compare 0 t.Size>>;
-	(e.Result) t.Count t.Size '-' = <BuildK (e.Result (<Chr <Add <Ord 'A'> t.Count>>)) <Add t.Count 1> t.Size <Compare <Add t.Count 1> t.Size>>;
-	(e.Result) t.Count t.Size '0' = (e.Result);
+	(t.Size) = <BuildK () 0 t.Size>;
+	t.Size = <BuildK () 0 t.Size>;
+	(e.Result) t.Size t.Size = (e.Result);
+	(e.Result) t.Count t.Size = <BuildK (e.Result (<LetterByInd (<AlphabetT>) t.Count>)) <Add t.Count 1> t.Size>;
+
 }
 
 AddToKOrStop {
 	(e.Processed) (e.Left) s.Var 0 t.Value = (e.Processed (s.Var) e.Left);
 	(e.Processed) (e.Left) s.Var (0) t.Value = (e.Processed (s.Var) e.Left);
-	(e.Processed) (e.Left) s.Var t.C t.Value = <AddToKOrStop (e.Processed) (e.Left) s.Var t.C t.Value <Compare <ModUnwrap t.Value t.C> 0>>;
-	(e.Processed) (e.Left) s.Var t.C t.Value '0' = (e.Processed (s.Var <DivUnwrap t.Value t.C>) e.Left);
-	(e.Processed) (e.Left) s.Var t.C t.Value s.Log = False;
+	(e.Processed) (e.Left) s.Var t.C t.Value = <AddToKOrStop (e.Processed) (e.Left) s.Var t.C t.Value <ModUnwrap t.Value t.C>>;
+	(e.Processed) (e.Left) s.Var t.C t.Value (0) = (e.Processed (s.Var <DivUnwrap t.Value t.C>) e.Left);
+	(e.Processed) (e.Left) s.Var t.C t.Value 0 = (e.Processed (s.Var <DivUnwrap t.Value t.C>) e.Left);
+	(e.Processed) (e.Left) s.Var t.C t.Value t.Any = False;
 }
 
 CalculateK {
@@ -1258,9 +1265,9 @@ FindInSolution {
 
 GenerateLetterVars {
 	(t.Count) (s.x1 s.x2 s.x3 s.x4 s.x5) = <GenerateLetterVars t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	t.Count (s.x1 s.x2 s.x3 s.x4 s.x5) = <GenerateLetterVars () (<NextNameT s.x1 s.x2 s.x3 s.x4 s.x5>) t.Count 1 <Compare 1 t.Count>>;
-	(e.Result) (s.x1 s.x2 s.x3 s.x4 s.x5) t.Count t.Current '-' = <GenerateLetterVars (e.Result (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) (<NextNameT s.x1 s.x2 s.x3 s.x4 s.x5>) t.Count <Add t.Current 1> <Compare <Add t.Current 1> t.Count>>;
-	(e.Result) (s.x1 s.x2 s.x3 s.x4 s.x5) t.Count t.Current '0' = (e.Result (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	t.Count (s.x1 s.x2 s.x3 s.x4 s.x5) = <GenerateLetterVars () (<NextNameT s.x1 s.x2 s.x3 s.x4 s.x5>) t.Count 1>;
+	(e.Result) (s.x1 s.x2 s.x3 s.x4 s.x5) t.Count t.Current = <GenerateLetterVars (e.Result (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) (<NextNameT s.x1 s.x2 s.x3 s.x4 s.x5>) t.Count <Add t.Current 1>>;
+	(e.Result) (s.x1 s.x2 s.x3 s.x4 s.x5) t.Count t.Count = (e.Result (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) (s.x1 s.x2 s.x3 s.x4 s.x5);
 }
 
 TryFirstReplaceDifferent {
