@@ -688,7 +688,7 @@ DiophantineSolve {
 			(e.System)
 			(e.AllSet)
 			(<FillAll () (e.Decoded) (e.AllSet)>)
-			<BuildEMatrix 0 t.Size <Compare 0 t.Size> ()>>;
+			<BuildEMatrix t.Size>>;
 	/*RE (e.System) (e.AllSet) (e.Filled) (e.Matrix) = e.System;*/
 	RE (e.System) (e.AllSet) (e.Filled) (e.Matrix) =
 		<DiophantineSolve
@@ -697,6 +697,7 @@ DiophantineSolve {
 			(e.AllSet)
 			<MakeRowEchelon <MatrixFromMaps () (e.Filled)> (e.Matrix)>
 			<GetRHS (e.Filled) ()>>;
+	/*K (e.System) (e.AllSet) (e.RowEchelon) (e.Matrix) (e.RHS) = e.System;*/
 	K (e.System) (e.AllSet) (e.RowEchelon) (e.Matrix) (e.RHS) =
 		<DiophantineSolve
 			X
@@ -840,8 +841,37 @@ SetSize {
 	(t.Any e.AllSet) t.Count = <SetSize (e.AllSet) <Add t.Count 1>>;
 }
 
+
+
 /*генерация ряда единичной матрицы*/
 BuildERow {
+	t.Number t.Size = <BuildERow t.Number t.Size 0 t.Size ()>;
+	t.Number t.Size t.Current 0 (e.Result) = (e.Result);
+	t.Number t.Size t.Number t.Left (e.Result) =
+		<BuildERow
+			t.Number
+			t.Size
+			<Add t.Number 1>
+			<Sub t.Left 1>
+			(e.Result (1))>;
+	t.Number t.Size t.Current t.Left (e.Result) =
+		<BuildERow
+			t.Number
+			t.Size
+			<Add t.Current 1>
+			<Sub t.Left 1>
+			(e.Result (0))>;
+}
+
+/*генерация единичной матрицы*/
+BuildEMatrix {
+	t.Size = <BuildEMatrix 0 t.Size t.Size ()>;
+	t.Counter 0 t.Size (e.Result) = (e.Result);
+	t.Counter t.Left t.Size (e.Result) = <BuildEMatrix <Add t.Counter 1> <Sub t.Left 1> t.Size (e.Result <BuildERow t.Counter t.Size>)>;
+}
+
+/*генерация ряда единичной матрицы*/
+/*BuildERow {
 	t.Number t.Size t.Current s.Log '0' (e.Result) = (e.Result);
 	t.Number t.Size t.Current '0' s.Log (e.Result) =
 		<BuildERow
@@ -859,13 +889,14 @@ BuildERow {
 			<Compare t.Number <Add t.Current 1>>
 			<Compare t.Size <Add t.Current 1>>
 			(e.Result (0))>;
-}
+}*/
 
 /*генерация единичной матрицы*/
-BuildEMatrix {
+/*BuildEMatrix {
+	t.Size = <BuildEMatrix 0 t.Size <Compare 0 t.Size> ()>;
 	t.Counter t.Size '0' (e.Result) = (e.Result);
 	t.Counter t.Size s.Log (e.Result) = <BuildEMatrix <Add t.Counter 1> t.Size <Compare <Add t.Counter 1> t.Size> (e.Result <BuildERow t.Counter t.Size 0 <Compare t.Counter 0> '-' ()>)>;
-}
+}*/
 
 GetRHS {
 	() (e.Result) = (e.Result);
@@ -1020,6 +1051,8 @@ SwapRows {
 
 SubRows {
 	(e.System) (e.Matrix) () t.CurrentRow t.CurrentColumn = (e.System) (e.Matrix) 'N';
+	(e.System) (e.Matrix) (t.Value (t.Index)) t.CurrentRow t.CurrentColumn
+		= <SubRows (e.System) (e.Matrix) (t.Value t.Index) t.CurrentRow t.CurrentColumn>;
 	(e.System) (e.Matrix) (t.Value t.Index) t.CurrentRow t.CurrentColumn
 		= <SubRows
 			()
@@ -1031,9 +1064,8 @@ SubRows {
 			<GetByIndex (e.Matrix) t.Index>
 			0
 			t.CurrentRow
-			t.CurrentColumn
-			<Compare 0 t.Index>>;
-	(e.ProcessedSystem) (e.ProcessedMatrix) (t.SystemRow e.System) (t.MatrixRow e.Matrix) (t.Value t.Index) t.Row t.Row2 t.Ind t.CurrentRow t.CurrentColumn '0'
+			t.CurrentColumn>;
+	(e.ProcessedSystem) (e.ProcessedMatrix) (t.SystemRow e.System) (t.MatrixRow e.Matrix) (t.Value t.Index) t.Row t.Row2 t.Index t.CurrentRow t.CurrentColumn
 		= <SubRows
 			(e.ProcessedSystem t.SystemRow)
 			(e.ProcessedMatrix t.MatrixRow)
@@ -1042,11 +1074,10 @@ SubRows {
 		 	(t.Value t.Index)
 		 	t.Row
 		 	t.Row2
-		 	<Add t.Ind 1>
+		 	<Add t.Index 1>
 		 	t.CurrentRow
-		 	t.CurrentColumn
-		 	<Compare <Add t.Ind 1> t.Index>>;
-	(e.ProcessedSystem) (e.ProcessedMatrix) (t.SystemRow e.System) (t.MatrixRow e.Matrix) (t.Value t.Index) t.Row t.Row2 t.Ind t.CurrentRow t.CurrentColumn s.Log
+		 	t.CurrentColumn>;
+	(e.ProcessedSystem) (e.ProcessedMatrix) (t.SystemRow e.System) (t.MatrixRow e.Matrix) (t.Value t.Index) t.Row t.Row2 t.Ind t.CurrentRow t.CurrentColumn
 		= <SubRows
 			<SubRowWrapper (e.ProcessedSystem) (e.ProcessedMatrix) t.SystemRow t.MatrixRow t.Row t.Row2 t.Value t.CurrentRow t.CurrentColumn t.Ind>
 			(e.System)
@@ -1056,72 +1087,85 @@ SubRows {
 		 	t.Row2
 		 	<Add t.Ind 1>
 		 	t.CurrentRow
-            t.CurrentColumn
-		 	<Compare <Add t.Ind 1> t.Index>>;
-	(e.ProcessedSystem) (e.ProcessedMatrix) () () (t.Value t.Index) t.Row t.Row2 t.Ind t.CurrentRow t.CurrentColumn s.Log
+            t.CurrentColumn>;
+	(e.ProcessedSystem) (e.ProcessedMatrix) () () (t.Value t.Index) t.Row t.Row2 t.Ind t.CurrentRow t.CurrentColumn
 		= <SubRows <SwapRows (e.ProcessedSystem) (e.ProcessedMatrix) t.Row t.Row2 t.Index t.CurrentRow> t.CurrentRow t.CurrentColumn>;
-	(e.ProcessedSystem) (e.ProcessedMatrix) t.CurrentRow t.CurrentColumn = (e.ProcessedSystem) (e.ProcessedMatrix) <IsComplete (e.ProcessedSystem) t.CurrentRow t.CurrentColumn>;
+	(e.ProcessedSystem) (e.ProcessedMatrix) t.CurrentRow t.CurrentColumn = (e.ProcessedSystem) (e.ProcessedMatrix);
 }
 
 MakeRowEchelonForColumn {
+	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn = <MakeRowEchelonForColumn (e.System) (e.Matrix) <IsComplete (e.System) t.CurrentRow t.CurrentColumn> t.CurrentRow t.CurrentColumn>;
+	(e.System) (e.Matrix) 'T' t.CurrentRow t.CurrentColumn = NonZero (e.System) (e.Matrix);
+	(e.System) (e.Matrix) 'N' t.CurrentRow t.CurrentColumn = Zero (e.System) (e.Matrix);
+	(e.System) (e.Matrix) 'F' t.CurrentRow t.CurrentColumn = <MakeRowEchelonForColumn <SubRows (e.System) (e.Matrix) <FindMin (e.System) t.CurrentRow t.CurrentColumn> t.CurrentRow t.CurrentColumn> t.CurrentRow t.CurrentColumn>;
+}
+
+/*MakeRowEchelonForColumn {
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn = <MakeRowEchelonForColumn (e.System) (e.Matrix) 'F' t.CurrentRow t.CurrentColumn>;
 	(e.System) (e.Matrix) 'T' t.CurrentRow t.CurrentColumn = (e.System) (e.Matrix) <Add t.CurrentRow 1>;
 	(e.System) (e.Matrix) 'N' t.CurrentRow t.CurrentColumn = (e.System) (e.Matrix) t.CurrentRow;
 	(e.System) (e.Matrix) 'F' t.CurrentRow t.CurrentColumn = <MakeRowEchelonForColumn <SubRows (e.System) (e.Matrix) <FindMin (e.System) t.CurrentRow t.CurrentColumn> t.CurrentRow t.CurrentColumn> t.CurrentRow t.CurrentColumn>;
-}
+}*/
 
 /*вспомогательная функция к IsComplete*/
 AddIfNotZero {
-	t.First t.Second = <AddIfNotZero t.First t.Second <Compare t.Second 0>>;
-	t.First t.Second '0' = t.First;
-	t.First t.Second s.Log = <Add t.First 1>;
+	t.First 0 = t.First;
+	t.First (0) = t.First;
+	t.First t.Second = <Add t.First 1>;
 }
 
 /*вспомогательная функция к IsComplete*/
 CheckComplete {
-	t.Count = <CheckComplete t.Count <Compare t.Count 1>>;
-	t.Count '+' = 'F';
-	t.Count s.Log = 'T';
+	0 = 'T';
+	(0) = 'T';
+	1 = 'T';
+	(1) = 'T';
+	t.Count = 'F';
+}
+
+SkipRows {
+	(e.Eq) (t.CurrentRow) = <SkipRows (e.Eq) t.CurrentRow>;
+	(e.Eq) t.CurrentRow = <SkipRows (e.Eq) t.CurrentRow 0>;
+	(e.Eq) t.CurrentRow t.CurrentRow = (e.Eq);
+	(t.Any e.Eq) t.CurrentRow t.Count = <SkipRows (e.Eq) t.CurrentRow <Add t.Count 1>>;
 }
 
 /*проверка, закончили ли мы с этим столбцом*/
 IsComplete {
-	(t.Any e.Eq) t.CurrentRow t.CurrentColumn =
+	(e.Eq) t.CurrentRow t.CurrentColumn =
 		<IsComplete
-			(e.Eq)
-			t.CurrentRow
+			Started
+			<SkipRows (e.Eq) t.CurrentRow>
 			t.CurrentColumn
-			0
-			0
-			<Compare 0 t.CurrentRow>>;
-	(t.Any e.Eq) t.CurrentRow t.CurrentColumn t.Ind t.Count '-' =
+			0>;
+	Started (t.Any e.Eq) t.CurrentColumn t.Count =
 		<IsComplete
+			Started
 			(e.Eq)
-			t.CurrentRow
 			t.CurrentColumn
-			<Add t.Ind 1>
-			t.Count
-			<Compare <Add t.Ind 1> t.CurrentRow>>;
-	(t.Any e.Eq) t.CurrentRow t.CurrentColumn t.Ind t.Count s.Log =
-		<IsComplete
-			(e.Eq)
-			t.CurrentRow
-			t.CurrentColumn
-			<Add t.Ind 1>
-			<Add <GetByIndex t.Any t.CurrentColumn> t.Count>
-			<Compare <Add t.Ind 1> t.CurrentRow>>;
-	() t.CurrentRow t.CurrentColumn t.Ind t.Count s.Log = <CheckComplete t.Count>;
+			<AddIfNotZero t.Count <GetByIndex t.Any t.CurrentColumn>>>;
+	Started () t.CurrentColumn t.Count = <CheckComplete t.Count>;
+}
+
+MakeRowEchelon {
+	() () = () ();
+	(e.System) (e.Matrix)  = <MakeRowEchelon (e.System) (e.Matrix) 0 0 <RowsQty (e.System)> <ColumnsQty (e.System)>>;
+	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.CurrentColumn = (e.System) (e.Matrix);
+	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.CurrentRow t.Columns = (e.System) (e.Matrix);
+	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns = <MakeRowEchelon (e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns <MakeRowEchelonForColumn (e.System) (e.Matrix) t.CurrentRow t.CurrentColumn>>;
+	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns Zero (e.NewSystem) (e.NewMatrix) = (e.NewSystem) (e.Matrix);
+	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns NonZero (e.NewSystem) (e.NewMatrix) = (e.NewSystem) (e.Matrix);
 }
 
 /*приводим матрицы к нужному виду*/
-MakeRowEchelon {
+/*MakeRowEchelon {
 	() () = () ();
 	(e.System) (e.Matrix)  = <MakeRowEchelon (e.System) (e.Matrix) 0 0 <RowsQty (e.System)> <ColumnsQty (e.System)> '-' '-'>;
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns = <MakeRowEchelon (e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns <Compare t.CurrentRow t.Rows> <Compare t.CurrentColumn t.Columns>>;
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns '0' s.Log = (e.System) (e.Matrix);
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns s.Log '0' = (e.System) (e.Matrix);
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns '-' '-' = <MakeRowEchelon <MakeRowEchelonForColumn  (e.System) (e.Matrix) t.CurrentRow t.CurrentColumn> <Add t.CurrentColumn 1> t.Rows t.Columns>;
-}
+}*/
 
 RowsQty {
 	(e.System) = <RowsQty Started (e.System) 0>;
