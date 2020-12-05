@@ -2,7 +2,20 @@
 *$MATCHING ForRepeatedSpecialization;
 *$STRATEGY Applicative;
 
-$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}
+$ENTRY Go
+{ (e.Rules) =
+<Eq (e.Rules) <Sim ( )
+ <Decode (<Conc ('e a b a a c f c d e a e f c a a Fs e b c  =')
+' e a b Bs Js c c d a e c b e b c' >)> 
+ <Decode (<Conc ('d f b f d f e e Fs b b c c b a Cs b  =')
+' d f b f Gs Js f f e c c e b' >)> 
+ <Decode (<Conc ('b f a b c d b a f b f d c a f d b d b a f c f a a c d e Fs e e c a e e a c  =')
+' b f a b c d b a f b f d c a f d b d b a f c f a a c d e Fs e e c a e e a c' >)> 
+ <Decode (<Conc ('b d f a c c d a d a f c f e a c b a d f c b c e a e e d e b f d f b a f a b d c  =')
+' b d f a c c d a d a f Fs c b a d f c b c e a e e d e b f d f b a f a b d c' >)> 
+ >>;
+}
+
 
 /*$ENTRY Go { = <Print <Eq (('As -> empty')('Cs -> empty')) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>>;}*/
 
