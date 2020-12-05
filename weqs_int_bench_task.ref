@@ -1254,6 +1254,10 @@ ReplaceSingle {
 	RE (e.System) s.Name (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = ((((var 'e' s.Name))(e.List)) <Sim () <subst_2 (assign (var 'e' s.Name)(e.List)) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
 }
 
+/* Здесь есть баг: TryFirstReplaceIfHasSolution иногда не возвращает индекс требуемой t-переменной, а он необходим для корректной обработки ветки <ApplySolution Replace ...>.
+Пример падающего запуска:
+$ENTRY Go {  = <Prout <Eq ( ) <Sim ( ) <Decode (<Conc ('As As As =') ' Cs a Cs'>)>>>>;}
+*/
 ApplySolution {
 	(e.System) () = e.System;
 	(e.System) (e.Solution) = <ApplySolution (e.Solution) (e.System) <FindMaxNameT () e.System>>;
