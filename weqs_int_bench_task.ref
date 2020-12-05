@@ -609,7 +609,7 @@ NextNameT {
 
 /*сбор строки A нужной длины для дописывания в конец*/
 BuildNameA {
-	(e.Result) /* EMPTY */ = '';
+	(e.Result) /* EMPTY */ = e.Result;
 	(e.Result) e.X'I' = <BuildNameA (e.Result 'A') e.X>;
 	e.X = <BuildNameA () e.X>
 }
@@ -1222,8 +1222,8 @@ FindInSolution {
 GenerateLetterVars {
 	(t.Count) (s.x1 s.x2 s.x3 s.x4 s.x5) = <GenerateLetterVars t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 	t.Count (s.x1 s.x2 s.x3 s.x4 s.x5) = <GenerateLetterVars () (<NextNameT s.x1 s.x2 s.x3 s.x4 s.x5>) t.Count 1>;
-	(e.Result) (s.x1 s.x2 s.x3 s.x4 s.x5) t.Count t.Current = <GenerateLetterVars (e.Result (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) (<NextNameT s.x1 s.x2 s.x3 s.x4 s.x5>) t.Count <Add t.Current 1>>;
 	(e.Result) (s.x1 s.x2 s.x3 s.x4 s.x5) t.Count t.Count = (e.Result (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	(e.Result) (s.x1 s.x2 s.x3 s.x4 s.x5) t.Count t.Current = <GenerateLetterVars (e.Result (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) (<NextNameT s.x1 s.x2 s.x3 s.x4 s.x5>) t.Count <Add t.Current 1>>;
 }
 
 TryFirstReplaceDifferent {
