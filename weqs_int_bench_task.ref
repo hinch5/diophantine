@@ -4,6 +4,8 @@
 
 $ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}
 
+/*$ENTRY Go { = <Print <Eq (('As -> empty')('Cs -> empty')) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>>;}*/
+
 /*$ENTRY Go {  = <Print <Eq (('As -> AAAABt As')('As -> empty')('AAAABt -> a')) <Sim ( ) <Decode (<Conc ('As =') ' a'>)>>>>;}*/
 
 /* Auxiliary function concatenating too long input strings.*/
@@ -838,8 +840,6 @@ SetSize {
 	(t.Any e.AllSet) t.Count = <SetSize (e.AllSet) <Add t.Count 1>>;
 }
 
-
-
 /*генерация ряда единичной матрицы*/
 BuildERow {
 	t.Number t.Size = <BuildERow t.Number t.Size 0 t.Size ()>;
@@ -917,15 +917,15 @@ Min {
 	((t.First) t.Ind1) (('-' t.Second) t.Ind2) s.Log = (t.First) t.Ind1;
 	(('-' t.First) t.Ind1) (('-' t.Second) t.Ind2) s.Log = ('-' t.First) t.Ind1;
 
-	((t.First) t.Ind1) ((t.Second) t.Ind2) = <Min ((t.First) t.Ind1) ((t.Second) t.Ind2) <Compare t.First t.Second>>;
-	(('-' t.First) t.Ind1) ((t.Second) t.Ind2) = <Min (('-' t.First) t.Ind1) ((t.Second) t.Ind2) <Compare t.First t.Second>>;
-	((t.First) t.Ind1) (('-' t.Second) t.Ind2) = <Min ((t.First) t.Ind1) (('-' t.Second) t.Ind2) <Compare t.First t.Second>>;
-	(('-' t.First) t.Ind1) (('-' t.Second) t.Ind2) = <Min (('-' t.First) t.Ind1) (('-' t.Second) t.Ind2) <Compare t.First t.Second>>;
+	((t.First) t.Ind1) ((t.Second) t.Ind2) = <Min ((t.First) t.Ind1) ((t.Second) t.Ind2) <IsNegative <Sub t.First t.Second>>>;
+	(('-' t.First) t.Ind1) ((t.Second) t.Ind2) = <Min (('-' t.First) t.Ind1) ((t.Second) t.Ind2) <IsNegative <Sub t.First t.Second>>>;
+	((t.First) t.Ind1) (('-' t.Second) t.Ind2) = <Min ((t.First) t.Ind1) (('-' t.Second) t.Ind2) <IsNegative <Sub t.First t.Second>>>;
+	(('-' t.First) t.Ind1) (('-' t.Second) t.Ind2) = <Min (('-' t.First) t.Ind1) (('-' t.Second) t.Ind2) <IsNegative <Sub t.First t.Second>>>;
 }
 
 FindMin {
-	(e.System) t.CurrentRow t.CurrentColumn = <FindMin (e.System) 0 t.CurrentRow t.CurrentColumn <Compare 0 t.CurrentRow> ()>;
-	((e.Row) e.System) t.Skipped t.CurrentRow t.CurrentColumn '-' () = <FindMin (e.System) <Add t.Skipped 1> t.CurrentRow t.CurrentColumn <Compare <Add t.Skipped 1> t.CurrentRow> ()>;
+	(e.System) t.CurrentRow t.CurrentColumn = <FindMin (e.System) 0 t.CurrentRow t.CurrentColumn <IsNegative <Sub 0 t.CurrentRow>> ()>;
+	((e.Row) e.System) t.Skipped t.CurrentRow t.CurrentColumn '-' () = <FindMin (e.System) <Add t.Skipped 1> t.CurrentRow t.CurrentColumn <IsNegative <Sub <Add t.Skipped 1> t.CurrentRow>> ()>;
 	((e.Row) e.System) t.Skipped t.CurrentRow t.CurrentColumn '0' () = <FindMin (e.System) <Add t.Skipped 1> t.CurrentRow t.CurrentColumn '+' (<GetByIndexIfNotZero (e.Row) t.CurrentColumn> t.Skipped)>;
 	((e.Row) e.System) t.Skipped t.CurrentRow t.CurrentColumn s.Log (t.MinIndex) = <FindMin (e.System) <Add t.Skipped 1> t.CurrentRow t.CurrentColumn '+' (<GetByIndexIfNotZero (e.Row) t.CurrentColumn> t.Skipped)>;
 	((e.Row) e.System) t.Skipped t.CurrentRow t.CurrentColumn s.Log (t.CurrentMin t.MinIndex) = <FindMin (e.System) <Add t.Skipped 1> t.CurrentRow t.CurrentColumn '+' (<Min (t.CurrentMin t.MinIndex) (<GetByIndexIfNotZero (e.Row) t.CurrentColumn> t.Skipped)>)>;
@@ -978,18 +978,11 @@ DivUnwrap {
 	('-' t.Value) ('-' t.ToSubValue) = (<Div t.Value t.ToSubValue>);
 }
 
-CmpUnwrap {
-	(t.First) (t.Second) = <Compare t.First t.Second>;
-	('-' t.First) (t.Second) = '-';
-	(t.First) ('-' t.Second) = '+';
-	('-' t.First) ('-' t.Second) = <Compare t.Second t.First>;
-}
-
 ReplaceElement {
-	(e.List) t.Value (t.Index) = <ReplaceElement () (e.List) t.Value t.Index 0 <Compare 0 t.Index>>;
-	(e.List) t.Value t.Index = <ReplaceElement () (e.List) t.Value t.Index 0 <Compare 0 t.Index>>;
-	(e.Processed) (t.Any e.List) t.Value t.Index t.Current '-' = <ReplaceElement (e.Processed t.Any) (e.List) t.Value t.Index <Add t.Current 1> <Compare <Add t.Current 1> t.Index>>;
-	(e.Processed) (t.Any e.List) t.Value t.Index t.Current '0' = (e.Processed t.Value e.List);
+	(e.List) t.Value (t.Index) = <ReplaceElement () (e.List) t.Value t.Index 0>;
+	(e.List) t.Value t.Index = <ReplaceElement () (e.List) t.Value t.Index 0>;
+	(e.Processed) (t.Any e.List) t.Value t.Index t.Index = (e.Processed t.Value e.List);
+	(e.Processed) (t.Any e.List) t.Value t.Index t.Current = <ReplaceElement (e.Processed t.Any) (e.List) t.Value t.Index <Add t.Current 1>>;
 }
 
 SubRow {
@@ -1000,19 +993,19 @@ SubRow {
 
 SubRowWrapper {
 	(e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Value t.CurrentRow t.CurrentColumn t.Ind
-		= <SubRowWrapper (e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Value t.CurrentRow t.CurrentColumn t.Ind <Compare t.Ind t.CurrentRow>>;
+		= <SubRowWrapper (e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Value t.CurrentRow t.CurrentColumn t.Ind <IsNegative <Sub t.Ind t.CurrentRow>>>;
 	(e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Value t.CurrentRow t.CurrentColumn t.Ind '-'
 		= (e.ProcessedSystem (e.Row)) (e.ProcessedMatrix (e.Row2));
 	(e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Value t.CurrentRow t.CurrentColumn t.Ind s.Log
 		= <SubRowWrapper (e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) <CalcMultiplier <GetByIndex (e.Row) t.CurrentColumn> t.Value>>;
 	(e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Multiplier
-		= (e.ProcessedSystem <SubRow (e.Row) (e.RowToSub) t.Multiplier>) (e.ProcessedMatrix <SubRow (e.Row2) (e.RowToSub2) t.Multiplier>);
+		= (e.ProcessedSystem <SubRow (e.Row) (e.RowToSub) t.Multiplier>) (e.ProcessedMatrix  <SubRow (e.Row2) (e.RowToSub2) t.Multiplier>);
 }
 
 SwapRows {
 	(e.System) (e.Matrix) t.Row t.Row2 t.Index t.Index2
-		= <ReplaceElement <ReplaceElement (e.System) <GetByIndex (e.System) t.Index2 0> t.Index> t.Row t.Index2>
-			<ReplaceElement <ReplaceElement (e.Matrix) <GetByIndex (e.Matrix) t.Index2 0> t.Index> t.Row2 t.Index2>;
+		= <ReplaceElement <ReplaceElement (e.System) <GetByIndex (e.System) t.Index2> t.Index> t.Row t.Index2>
+			<ReplaceElement <ReplaceElement (e.Matrix) <GetByIndex (e.Matrix) t.Index2> t.Index> t.Row2 t.Index2>;
 }
 
 SubRows {
@@ -1075,8 +1068,8 @@ AddIfNotZero {
 
 /*вспомогательная функция к IsComplete*/
 CheckComplete {
-	0 = 'T';
-	(0) = 'T';
+	0 = 'N';
+	(0) = 'N';
 	1 = 'T';
 	(1) = 'T';
 	t.Count = 'F';
@@ -1112,8 +1105,8 @@ MakeRowEchelon {
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.CurrentColumn = (e.System) (e.Matrix);
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.CurrentRow t.Columns = (e.System) (e.Matrix);
 	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns = <MakeRowEchelon (e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns <MakeRowEchelonForColumn (e.System) (e.Matrix) t.CurrentRow t.CurrentColumn>>;
-	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns Zero (e.NewSystem) (e.NewMatrix) = <MakeRowEchelon (e.NewSystem) (e.Matrix) t.CurrentRow <Add t.CurrentColumn 1> t.Rows t.Columns>;
-	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns NonZero (e.NewSystem) (e.NewMatrix) = <MakeRowEchelon (e.NewSystem) (e.Matrix) <Add t.CurrentRow 1> <Add t.CurrentColumn 1> t.Rows t.Columns>;
+	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns Zero (e.NewSystem) (e.NewMatrix) = <MakeRowEchelon (e.NewSystem) (e.NewMatrix) t.CurrentRow <Add t.CurrentColumn 1> t.Rows t.Columns>;
+	(e.System) (e.Matrix) t.CurrentRow t.CurrentColumn t.Rows t.Columns NonZero (e.NewSystem) (e.NewMatrix) = <MakeRowEchelon (e.NewSystem) (e.NewMatrix) <Add t.CurrentRow 1> <Add t.CurrentColumn 1> t.Rows t.Columns>;
 }
 
 RowsQty {
@@ -1187,6 +1180,8 @@ ChooseK {
 
 IsNegative {
 	('-' t.Value) = '-';
+	0 = '0';
+	(0) = '0';
 	t.Value = '+';
 }
 
@@ -1232,7 +1227,7 @@ TryFirstReplaceDifferent {
 }
 
 TryFirstReplaceIfHasSolution {
-	(e.System) s.Name s.Name2 (t.Count1) (t.Count2) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplaceIfHasSolution s.Name s.Name2 <SubUnwrap t.Count1 t.Count2> <CmpUnwrap t.Count1 t.Count2> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	(e.System) s.Name s.Name2 (t.Count1) (t.Count2) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplaceIfHasSolution s.Name s.Name2 <SubUnwrap t.Count1 t.Count2> <IsNegative <SubUnwrap t.Count1 t.Count2>> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 	(e.System) s.Name s.Name2 (t.Count) () (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.System);
 	(e.System) s.Name s.Name2 () (t.Count) (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.System);
 	(e.System) s.Name s.Name2 () () (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.System);
