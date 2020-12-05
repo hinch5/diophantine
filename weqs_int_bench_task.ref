@@ -683,7 +683,6 @@ IncSym {
 DiophantineSolve {
 	(e.System) = <DiophantineSolve BuildSet (e.System) <ToLengthSystemEquation () e.System>>;
 	BuildSet (e.System) (e.Decoded) = <DiophantineSolve FillSystem (e.System) (e.Decoded) <BuildAllMap (e.Decoded) ()>>;
-	/*FillSystem (e.System) (e.Decoded) (e.AllSet) t.Size = e.System;*/
 	FillSystem (e.System) (e.Decoded) (e.AllSet) t.Size
 		= <DiophantineSolve
 			RE
@@ -917,15 +916,15 @@ Min {
 	((t.First) t.Ind1) (('-' t.Second) t.Ind2) s.Log = (t.First) t.Ind1;
 	(('-' t.First) t.Ind1) (('-' t.Second) t.Ind2) s.Log = ('-' t.First) t.Ind1;
 
-	((t.First) t.Ind1) ((t.Second) t.Ind2) = <Min ((t.First) t.Ind1) ((t.Second) t.Ind2) <IsNegative <Sub t.First t.Second>>>;
-	(('-' t.First) t.Ind1) ((t.Second) t.Ind2) = <Min (('-' t.First) t.Ind1) ((t.Second) t.Ind2) <IsNegative <Sub t.First t.Second>>>;
-	((t.First) t.Ind1) (('-' t.Second) t.Ind2) = <Min ((t.First) t.Ind1) (('-' t.Second) t.Ind2) <IsNegative <Sub t.First t.Second>>>;
-	(('-' t.First) t.Ind1) (('-' t.Second) t.Ind2) = <Min (('-' t.First) t.Ind1) (('-' t.Second) t.Ind2) <IsNegative <Sub t.First t.Second>>>;
+	((t.First) t.Ind1) ((t.Second) t.Ind2) = <Min ((t.First) t.Ind1) ((t.Second) t.Ind2) <IsNegative (<Sub t.First t.Second>)>>;
+	(('-' t.First) t.Ind1) ((t.Second) t.Ind2) = <Min (('-' t.First) t.Ind1) ((t.Second) t.Ind2) <IsNegative (<Sub t.First t.Second>)>>;
+	((t.First) t.Ind1) (('-' t.Second) t.Ind2) = <Min ((t.First) t.Ind1) (('-' t.Second) t.Ind2) <IsNegative (<Sub t.First t.Second>)>>;
+	(('-' t.First) t.Ind1) (('-' t.Second) t.Ind2) = <Min (('-' t.First) t.Ind1) (('-' t.Second) t.Ind2) <IsNegative (<Sub t.First t.Second>)>>;
 }
 
 FindMin {
-	(e.System) t.CurrentRow t.CurrentColumn = <FindMin (e.System) 0 t.CurrentRow t.CurrentColumn <IsNegative <Sub 0 t.CurrentRow>> ()>;
-	((e.Row) e.System) t.Skipped t.CurrentRow t.CurrentColumn '-' () = <FindMin (e.System) <Add t.Skipped 1> t.CurrentRow t.CurrentColumn <IsNegative <Sub <Add t.Skipped 1> t.CurrentRow>> ()>;
+	(e.System) t.CurrentRow t.CurrentColumn = <FindMin (e.System) 0 t.CurrentRow t.CurrentColumn <IsNegative (<Sub 0 t.CurrentRow>)> ()>;
+	((e.Row) e.System) t.Skipped t.CurrentRow t.CurrentColumn '-' () = <FindMin (e.System) <Add t.Skipped 1> t.CurrentRow t.CurrentColumn <IsNegative (<Sub <Add t.Skipped 1> t.CurrentRow>)> ()>;
 	((e.Row) e.System) t.Skipped t.CurrentRow t.CurrentColumn '0' () = <FindMin (e.System) <Add t.Skipped 1> t.CurrentRow t.CurrentColumn '+' (<GetByIndexIfNotZero (e.Row) t.CurrentColumn> t.Skipped)>;
 	((e.Row) e.System) t.Skipped t.CurrentRow t.CurrentColumn s.Log (t.MinIndex) = <FindMin (e.System) <Add t.Skipped 1> t.CurrentRow t.CurrentColumn '+' (<GetByIndexIfNotZero (e.Row) t.CurrentColumn> t.Skipped)>;
 	((e.Row) e.System) t.Skipped t.CurrentRow t.CurrentColumn s.Log (t.CurrentMin t.MinIndex) = <FindMin (e.System) <Add t.Skipped 1> t.CurrentRow t.CurrentColumn '+' (<Min (t.CurrentMin t.MinIndex) (<GetByIndexIfNotZero (e.Row) t.CurrentColumn> t.Skipped)>)>;
@@ -993,7 +992,7 @@ SubRow {
 
 SubRowWrapper {
 	(e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Value t.CurrentRow t.CurrentColumn t.Ind
-		= <SubRowWrapper (e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Value t.CurrentRow t.CurrentColumn t.Ind <IsNegative <Sub t.Ind t.CurrentRow>>>;
+		= <SubRowWrapper (e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Value t.CurrentRow t.CurrentColumn t.Ind <IsNegative (<Sub t.Ind t.CurrentRow>)>>;
 	(e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Value t.CurrentRow t.CurrentColumn t.Ind '-'
 		= (e.ProcessedSystem (e.Row)) (e.ProcessedMatrix (e.Row2));
 	(e.ProcessedSystem) (e.ProcessedMatrix) (e.Row) (e.Row2) (e.RowToSub) (e.RowToSub2) t.Value t.CurrentRow t.CurrentColumn t.Ind s.Log
