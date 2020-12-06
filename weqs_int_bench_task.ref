@@ -115,10 +115,13 @@ Translate {
 }
 
 Eq {
-	/*(e.Rules) e.System = <EqSubst (e.Rules) e.System>;*/
+	/*применение подстановок ничего не дало на очередном шаге. Считаем шаг неудачным*/
+	(e.Rules) 'N' e.System = False;
+	/*применение подстановок что-то дало. Продолжаем работу*/
+	(e.Rules) 'T' e.System = <Eq (e.Rules) e.System>;
 	(e.Rules) e.System = <Eq Solved (e.Rules) <DiophantineSolve (e.System)>>;
 	Solved (e.Rules) False = False;
-	Solved (e.Rules) e.System = <EqSubst (e.Rules) e.System>;
+	Solved (e.Rules) e.System = <EqSubst (e.Rules) 'N' e.System>;
 }
 
 /*
@@ -131,21 +134,23 @@ Eq {
 EqSubst {
 	/* 1а. Если обе части единственного в списке уравнения пусты, получено тривиальное тождество и развертка завершается.
   	Считаем, что список правил, которые нужно применить к этому тождеству, также пуст. */
-	(/* EMPTY */)((/*EMPTY*/)(/*EMPTY*/)) = True;
+	(/* EMPTY */) s.Log ((/*EMPTY*/)(/*EMPTY*/)) = True;
+	/* 1в. Если правила закончились, а уравнения не привелись к тривиальным тождествам, то False*/
+	() s.Log e.Other = s.Log False;
 	/* 1б. Если обе части очередного в списке уравнения пусты, переходим к развертке следующего уравнения в списке. */
-	(e.Rules)((/*EMPTY*/)(/*EMPTY*/)) e.Other = <EqSubst (e.Rules) e.Other>;
+	(e.Rules) s.Log ((/*EMPTY*/)(/*EMPTY*/)) e.Other = <EqSubst (e.Rules) s.Log e.Other>;
 	/* 2а+4a+6a. Какова бы ни была правая часть уравнения, если левая начинается с е-переменной x, и правило преобразования есть x -> empty,
       тогда строим присваивание этой переменной значения, равного пустой строке, и осуществляем подстановку данного присваивания. */
-	((s.x's -> empty') e.R1)((e.LHS)((var 'e' s.x) e.RHS)) e.Other
-		= <EqSubst (e.R1) <Sim (/* EMPTY */)
+	((s.x's -> empty') e.R1) s.Log ((e.LHS)((var 'e' s.x) e.RHS)) e.Other
+		= <EqSubst (e.R1) 'T' <Sim (/* EMPTY */)
 			((<subst (assign (var 'e' s.x)(/* EMPTY */))(/*EMPTY*/)(e.LHS)>)
 			(<subst (assign (var 'e' s.x)(/* EMPTY */))(/*EMPTY*/)(e.RHS)>))
 			<subst_2 (assign (var 'e' s.x)(/* EMPTY */))e.Other>
 		>>;
 	/* 2б+4б+6б. Какова бы ни была левая часть уравнения, если правая начинается с е-переменной x, и правило преобразования есть x -> empty,
       тогда строим присваивание этой переменной значения, равного пустой строке, и осуществляем подстановку данного присваивания. */
-	((s.x's -> empty') e.R1)(((var 'e' s.x) e.LHS)(e.RHS)) e.Other
-		= <EqSubst (e.R1) <Sim (/* EMPTY */)
+	((s.x's -> empty') e.R1) s.Log (((var 'e' s.x) e.LHS)(e.RHS)) e.Other
+		= <EqSubst (e.R1) 'T' <Sim (/* EMPTY */)
 			((<subst (assign (var 'e' s.x)(/* EMPTY */))(/*EMPTY*/)(e.LHS)>)
 			(<subst (assign (var 'e' s.x)(/* EMPTY */))(/*EMPTY*/)(e.RHS)>))
 			<subst_2 (assign (var 'e' s.x)(/* EMPTY */))e.Other>
@@ -153,8 +158,8 @@ EqSubst {
 	/* 3a. Если левая часть уравнения начинается с e-переменной x, а правая – с буквы s.Sym,
       и правило преобразования есть x -> s.Sym x, осуществляем подстановку x := s.Sym++x.
       После этого вызываем функцию упрощения уравнений (Sim). */
-	((s.x's -> 's.Sym' 's.x's') e.R1)(((var 'e' s.x) e.LHS)(s.Sym e.RHS)) e.Other
-		= <EqSubst (e.R1) <Sim (/* EMPTY */)
+	((s.x's -> 's.Sym' 's.x's') e.R1) s.Log (((var 'e' s.x) e.LHS)(s.Sym e.RHS)) e.Other
+		= <EqSubst (e.R1) 'T' <Sim (/* EMPTY */)
 			((<subst (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))((var 'e' s.x))(e.LHS)>)
 			(<subst (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))(/*EMPTY*/)(e.RHS)>))
 			<subst_2 (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))e.Other>
@@ -162,65 +167,65 @@ EqSubst {
 	/* 3б. Если правая часть уравнения начинается с e-переменной x, а левая – с буквы s.Sym,
       и правило преобразования есть x -> s.Sym x, осуществляем подстановку x := s.Sym++x.
       После этого вызываем функцию упрощения уравнений (Sim). */
-	((s.x's -> 's.Sym' 's.x's') e.R1)((s.Sym e.LHS)((var 'e' s.x) e.RHS)) e.Other
-		= <EqSubst (e.R1) <Sim (/* EMPTY */)
+	((s.x's -> 's.Sym' 's.x's') e.R1) s.Log ((s.Sym e.LHS)((var 'e' s.x) e.RHS)) e.Other
+		= <EqSubst (e.R1) 'T' <Sim (/* EMPTY */)
 			((<subst (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))(/*EMPTY*/)(e.LHS)>)
 			(<subst (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))((var 'e' s.x))(e.RHS)>))
 			<subst_2 (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))e.Other>
 		>>;
 	/* 5a. Если левая часть уравнения начинается с переменной x, а правая – с переменной y, и правило преобразования есть x -> y x,
       осуществляем подстановку x:= y++x. После этого вызываем функцию упрощения уравнений. */
-	((s.x's -> 's.y's 's.x's') e.R1)(((var 'e' s.x) e.LHS)((var 'e' s.y) e.RHS)) e.Other
-		= <EqSubst (e.R1) <Sim (/* EMPTY */)
+	((s.x's -> 's.y's 's.x's') e.R1) s.Log (((var 'e' s.x) e.LHS)((var 'e' s.y) e.RHS)) e.Other
+		= <EqSubst (e.R1) 'T' <Sim (/* EMPTY */)
 			((<subst (assign (var 'e' s.x)((var 'e' s.y) (var 'e' s.x)))((var 'e' s.x))(e.LHS)>)
 			(<subst (assign (var 'e' s.x)((var 'e' s.y) (var 'e' s.x)))(/*EMPTY*/)(e.RHS)>))
 			<subst_2 (assign (var 'e' s.x)((var 'e' s.y)(var 'e' s.x)))e.Other>
 		>>;
 	/* 5б. Если левая часть уравнения начинается с переменной x, а правая – с переменной y, и правило преобразования есть y -> x y,
       осуществляем подстановку y:= x++y. После этого вызываем функцию упрощения уравнений. */
-	((s.y's -> 's.x's 's.y's') e.R1)(((var 'e' s.x) e.LHS)((var 'e' s.y) e.RHS)) e.Other
-		= <EqSubst (e.R1) <Sim (/* EMPTY */)
+	((s.y's -> 's.x's 's.y's') e.R1) s.Log (((var 'e' s.x) e.LHS)((var 'e' s.y) e.RHS)) e.Other
+		= <EqSubst (e.R1) 'T' <Sim (/* EMPTY */)
 			((<subst (assign (var 'e' s.y)((var 'e' s.x)(var 'e' s.y)))(/*EMPTY*/)(e.LHS)>)
 			(<subst (assign (var 'e' s.y)((var 'e' s.x) (var 'e' s.y)))((var 'e' s.y))(e.RHS)>))
 			<subst_2 (assign (var 'e' s.y)((var 'e' s.x)(var 'e' s.y)))e.Other>
 		>>;
 	/* буквенная переменная */
-	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.R1)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)(s.Sym e.RHS)) e.Other
-		= <EqSubst (e.R1) <Sim ()
+	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.R1) s.Log (((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)(s.Sym e.RHS)) e.Other
+		= <EqSubst (e.R1) 'T' <Sim ()
 			((<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.LHS)>)
             (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.RHS)>))
             <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))e.Other>
 		>>;
 	/* буквенная переменная */
-	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.R1)((s.Sym e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
-    	= <EqSubst (e.R1) <Sim ()
+	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.R1) s.Log ((s.Sym e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
+    	= <EqSubst (e.R1) 'T' <Sim ()
     		((<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.LHS)>)
     		(<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.RHS)>))
     		<subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))e.Other>
     	>>;
     /* буквенная переменная */
-   	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.x6 s.x7 s.x8 s.x9 s.x10't') e.R1)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10) e.RHS)) e.Other
-   		= <EqSubst (e.R1) <Sim ()
+   	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.x6 s.x7 s.x8 s.x9 s.x10't') e.R1) s.Log (((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10) e.RHS)) e.Other
+   		= <EqSubst (e.R1) 'T' <Sim ()
    			((<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))(/*Empty*/)(e.LHS)>)
             (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))(/*Empty*/)(e.RHS)>))
             <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))e.Other>
    		>>;
    	/**/
-   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't ' s.x's') e.R1)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 'e' s.x) e.RHS)) e.Other
-   		= <EqSubst (e.R1) <Sim ()
+   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't ' s.x's') e.R1) s.Log (((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 'e' s.x) e.RHS)) e.Other
+   		= <EqSubst (e.R1) 'T' <Sim ()
    			((<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))(/*Empty*/)(e.LHS)>)
             (<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))((var 'e' s.x))(e.RHS)>))
             <subst_2 (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))e.Other>
    		>>;
    	/**/
-   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't ' s.x's') e.R1)(((var 'e' s.x) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
-   		= <EqSubst (e.R1) <Sim ()
+   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't ' s.x's') e.R1) s.Log (((var 'e' s.x) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
+   		= <EqSubst (e.R1) 'T' <Sim ()
    			((<subst (assign (var 'e' s.x) ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))((var 'e' s.x))(e.LHS)>)
             (<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))(/*Empty*/)(e.RHS)>))
             <subst_2 (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))e.Other>
    		>>;
 	/* 7. Во всех прочих случаях считаем, что шаг решения уравнения невозможен. */
-	(e.R1)e.Other = False;
+	(e.R1) s.Log e.Other = <Eq (e.R1) s.Log e.Other>;
 }
 
 /* Функция подстановки в выражение имеет входной формат:
