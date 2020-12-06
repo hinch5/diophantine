@@ -1072,11 +1072,13 @@ AddIfNotZero {
 
 /*вспомогательная функция к IsComplete*/
 CheckComplete {
-	0 = 'N';
-	(0) = 'N';
-	1 = 'T';
-	(1) = 'T';
-	t.Count = 'F';
+	0 s.Log = 'N';
+	(0) s.Log = 'N';
+	1 '0' = 'F';
+	(1) '0' = 'F';
+	1 s.Log = 'T';
+    (1) s.Log = 'T';
+	t.Count s.Log = 'F';
 }
 
 SkipRows {
@@ -1090,17 +1092,18 @@ SkipRows {
 IsComplete {
 	(e.Eq) t.CurrentRow t.CurrentColumn =
 		<IsComplete
-			Started
+			Skipped
 			<SkipRows (e.Eq) t.CurrentRow>
-			t.CurrentColumn
-			0>;
-	Started (t.Any e.Eq) t.CurrentColumn t.Count =
+			t.CurrentColumn>;
+	Skipped (t.Any e.Eq) t.CurrentColumn = <IsComplete Started (t.Any e.Eq) t.CurrentColumn <IsNegative <GetByIndex t.Any t.CurrentColumn>> 0>;
+	Started (t.Any e.Eq) t.CurrentColumn s.Log t.Count =
 		<IsComplete
 			Started
 			(e.Eq)
 			t.CurrentColumn
+			s.Log
 			<AddIfNotZero t.Count <GetByIndex t.Any t.CurrentColumn>>>;
-	Started () t.CurrentColumn t.Count = <CheckComplete t.Count>;
+	Started () t.CurrentColumn s.Log t.Count = <CheckComplete t.Count s.Log>;
 }
 
 MakeRowEchelon {
