@@ -2,28 +2,7 @@
 *$MATCHING ForRepeatedSpecialization;
 *$STRATEGY Applicative;
 
-/*$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}*/
-
-/*$ENTRY Go { = <Print <Eq (('As -> empty')('Cs -> empty')) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>>;}*/
-
-/*$ENTRY Go {  = <Print <Eq (('As -> AAAABt As')('As -> empty')('AAAABt -> a')) <Sim ( ) <Decode (<Conc ('As =') ' a'>)>>>>;}*/
-
-/*$ENTRY Go { = <Print <GenerateLetterVars 100 ('AAAAA')>>}*/
-
-$ENTRY Go
-{  =
-<Print <Eq (('Cs -> AAAABt Cs' ) ('Cs -> AAAACt Cs' ) ('Cs -> empty' ) ('As -> AAAAAt As'
-              ) ('As -> empty' ) ('Hs -> c Hs' ) ('Hs -> c Hs' ) ('Hs -> e Hs' ) ('Hs -> empty'
-            ) ('Gs -> AAAAAt Gs' ) ('Gs -> e Gs' ) ('Is -> empty' ) ('Gs -> empty'
-           ) ('AAAAAt -> a' ) ('AAAABt -> b' ) ('AAAACt -> a' )) <Sim ( )
- <Decode (<Conc ('b b e b f c Cs c c e e Gs As e a d As b b d As e As e As e d d b e  =')
-' b b e b f c Cs Hs e As e Is a e As d As b b d a e As e a e d d b e' >)>
- <Decode (<Conc ('b f e c b e As c d f b e c As f d f b d c f As c c c b b As f d c e a e d b f a e c  =')
-' b f e c b e a c d f b e c a f d f b d c f As c c c b b a f d c e a e d b f a e c' >)>
- <Decode (<Conc ('b a As d f b d As f a d e f f b e f d c e b d As e b Cs As d d b e d a f As d e c a  =')
-' b As a d f b d As f As d e f f b e f d c e b d As e b b As As d d b e d As f As d e c a' >)>
- >>>;
-}
+$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}
 
 /* Auxiliary function concatenating too long input strings.*/
 Conc {(e.1) e.2 = e.1 e.2;}
@@ -694,8 +673,8 @@ IncSym {
 /*********************************************************************************************************************/
 
 DiophantineSolve {
-	(e.System) (e.PrevSolution) = <DiophantineSolve BuildSet (e.System) (e.Solution) <ToLengthSystemEquation () e.System>>;
-	BuildSet (e.System) (e.PrevSolution) (e.Decoded) = <DiophantineSolve FillSystem (e.System) (e.PrevSolution) (e.Decoded) <BuildAllMap (e.Decoded) ()>>;
+	(e.System) = <DiophantineSolve BuildSet (e.System) <ToLengthSystemEquation () e.System>>;
+	BuildSet (e.System) (e.Decoded) = <DiophantineSolve FillSystem (e.System) (e.Decoded) <BuildAllMap (e.Decoded) ()>>;
 	FillSystem (e.System) (e.Decoded) (e.AllSet) t.Size
 		= <DiophantineSolve
 			RE
