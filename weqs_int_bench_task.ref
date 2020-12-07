@@ -4,6 +4,21 @@
 
 $ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}
 
+/*$ENTRY Go
+{  =
+<Print <Eq (('Cs -> AAAABt Cs' ) ('Cs -> AAAACt Cs' ) ('Cs -> empty' ) ('As -> AAAAAt As'
+       ) ('As -> empty' ) ('Hs -> c Hs' ) ('Hs -> c Hs' ) ('Hs -> e Hs' ) ('Hs -> empty'
+     ) ('Gs -> AAAAAt Gs' ) ('Gs -> e Gs' ) ('Is -> empty' ) ('Gs -> empty'
+    ) ('AAAAAt -> a' ) ('AAAABt -> b' ) ('AAAACt -> a' )) <Sim ( )
+ <Decode (<Conc ('b b e b f c Cs c c e e Gs As e a d As b b d As e As e As e d d b e  =')
+' b b e b f c Cs Hs e As e Is a e As d As b b d a e As e a e d d b e' >)>
+ <Decode (<Conc ('b f e c b e As c d f b e c As f d f b d c f As c c c b b As f d c e a e d b f a e c  =')
+' b f e c b e a c d f b e c a f d f b d c f As c c c b b a f d c e a e d b f a e c' >)>
+ <Decode (<Conc ('b a As d f b d As f a d e f f b e f d c e b d As e b Cs As d d b e d a f As d e c a  =')
+' b As a d f b d As f As d e f f b e f d c e b d As e b b As As d d b e d As f As d e c a' >)>
+ >>>;
+}*/
+
 /* Auxiliary function concatenating too long input strings.*/
 Conc {(e.1) e.2 = e.1 e.2;}
 
@@ -11,7 +26,7 @@ Const__ { e.x = e.x;}
 
 /* Главная функция перекодировки уравнения из пользовательского формата во внутренний формат интерпретатора. */
 Decode {
-	(e.Left'='e.Right) = ((<Translate e.Left>)(<Translate e.Right>));
+	(e.Left'='e.Right) = (Original (<Translate e.Left>)(<Translate e.Right>));
 }
 
 /* Список всех литералов, которые могут выступать в качестве имен переменных. */
@@ -126,91 +141,91 @@ Eq {
 EqSubst {
 	/* 1а. Если обе части единственного в списке уравнения пусты, получено тривиальное тождество и развертка завершается.
   	Считаем, что список правил, которые нужно применить к этому тождеству, также пуст. */
-	(/* EMPTY */) ((/*EMPTY*/)(/*EMPTY*/)) = True;
+	(/* EMPTY */) (t.Tag (/*EMPTY*/)(/*EMPTY*/)) = True;
 	/* 1б. Если обе части очередного в списке уравнения пусты, переходим к развертке следующего уравнения в списке. */
-	(e.Rules) ((/*EMPTY*/)(/*EMPTY*/)) e.Other = <EqSubst (e.Rules) e.Other>;
+	(e.Rules) (t.Tag (/*EMPTY*/)(/*EMPTY*/)) e.Other = <EqSubst (e.Rules) e.Other>;
 	/* 2а+4a+6a. Какова бы ни была правая часть уравнения, если левая начинается с е-переменной x, и правило преобразования есть x -> empty,
       тогда строим присваивание этой переменной значения, равного пустой строке, и осуществляем подстановку данного присваивания. */
-	((s.x's -> empty') e.R1) ((e.LHS)((var 'e' s.x) e.RHS)) e.Other
+	((s.x's -> empty') e.R1) (t.Tag (e.LHS)((var 'e' s.x) e.RHS)) e.Other
 		= <Eq (e.R1) <Sim (/* EMPTY */)
-			((<subst (assign (var 'e' s.x)(/* EMPTY */))(/*EMPTY*/)(e.LHS)>)
+			(t.Tag (<subst (assign (var 'e' s.x)(/* EMPTY */))(/*EMPTY*/)(e.LHS)>)
 			(<subst (assign (var 'e' s.x)(/* EMPTY */))(/*EMPTY*/)(e.RHS)>))
 			<subst_2 (assign (var 'e' s.x)(/* EMPTY */))e.Other>
 		>>;
 	/* 2б+4б+6б. Какова бы ни была левая часть уравнения, если правая начинается с е-переменной x, и правило преобразования есть x -> empty,
       тогда строим присваивание этой переменной значения, равного пустой строке, и осуществляем подстановку данного присваивания. */
-	((s.x's -> empty') e.R1) (((var 'e' s.x) e.LHS)(e.RHS)) e.Other
+	((s.x's -> empty') e.R1) (t.Tag ((var 'e' s.x) e.LHS)(e.RHS)) e.Other
 		= <Eq (e.R1)  <Sim (/* EMPTY */)
-			((<subst (assign (var 'e' s.x)(/* EMPTY */))(/*EMPTY*/)(e.LHS)>)
+			(t.Tag (<subst (assign (var 'e' s.x)(/* EMPTY */))(/*EMPTY*/)(e.LHS)>)
 			(<subst (assign (var 'e' s.x)(/* EMPTY */))(/*EMPTY*/)(e.RHS)>))
 			<subst_2 (assign (var 'e' s.x)(/* EMPTY */))e.Other>
 		>>;
 	/* 3a. Если левая часть уравнения начинается с e-переменной x, а правая – с буквы s.Sym,
       и правило преобразования есть x -> s.Sym x, осуществляем подстановку x := s.Sym++x.
       После этого вызываем функцию упрощения уравнений (Sim). */
-	((s.x's -> 's.Sym' 's.x's') e.R1) (((var 'e' s.x) e.LHS)(s.Sym e.RHS)) e.Other
+	((s.x's -> 's.Sym' 's.x's') e.R1) (t.Tag ((var 'e' s.x) e.LHS)(s.Sym e.RHS)) e.Other
 		= <Eq (e.R1)  <Sim (/* EMPTY */)
-			((<subst (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))((var 'e' s.x))(e.LHS)>)
+			(t.Tag (<subst (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))((var 'e' s.x))(e.LHS)>)
 			(<subst (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))(/*EMPTY*/)(e.RHS)>))
 			<subst_2 (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))e.Other>
 		>>;
 	/* 3б. Если правая часть уравнения начинается с e-переменной x, а левая – с буквы s.Sym,
       и правило преобразования есть x -> s.Sym x, осуществляем подстановку x := s.Sym++x.
       После этого вызываем функцию упрощения уравнений (Sim). */
-	((s.x's -> 's.Sym' 's.x's') e.R1) ((s.Sym e.LHS)((var 'e' s.x) e.RHS)) e.Other
+	((s.x's -> 's.Sym' 's.x's') e.R1) (t.Tag (s.Sym e.LHS)((var 'e' s.x) e.RHS)) e.Other
 		= <Eq (e.R1)  <Sim (/* EMPTY */)
-			((<subst (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))(/*EMPTY*/)(e.LHS)>)
+			(t.Tag (<subst (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))(/*EMPTY*/)(e.LHS)>)
 			(<subst (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))((var 'e' s.x))(e.RHS)>))
 			<subst_2 (assign (var 'e' s.x)(s.Sym (var 'e' s.x)))e.Other>
 		>>;
 	/* 5a. Если левая часть уравнения начинается с переменной x, а правая – с переменной y, и правило преобразования есть x -> y x,
       осуществляем подстановку x:= y++x. После этого вызываем функцию упрощения уравнений. */
-	((s.x's -> 's.y's 's.x's') e.R1) (((var 'e' s.x) e.LHS)((var 'e' s.y) e.RHS)) e.Other
+	((s.x's -> 's.y's 's.x's') e.R1) (t.Tag ((var 'e' s.x) e.LHS)((var 'e' s.y) e.RHS)) e.Other
 		= <Eq (e.R1) <Sim (/* EMPTY */)
-			((<subst (assign (var 'e' s.x)((var 'e' s.y) (var 'e' s.x)))((var 'e' s.x))(e.LHS)>)
+			(t.Tag (<subst (assign (var 'e' s.x)((var 'e' s.y) (var 'e' s.x)))((var 'e' s.x))(e.LHS)>)
 			(<subst (assign (var 'e' s.x)((var 'e' s.y) (var 'e' s.x)))(/*EMPTY*/)(e.RHS)>))
 			<subst_2 (assign (var 'e' s.x)((var 'e' s.y)(var 'e' s.x)))e.Other>
 		>>;
 	/* 5б. Если левая часть уравнения начинается с переменной x, а правая – с переменной y, и правило преобразования есть y -> x y,
       осуществляем подстановку y:= x++y. После этого вызываем функцию упрощения уравнений. */
-	((s.y's -> 's.x's 's.y's') e.R1) (((var 'e' s.x) e.LHS)((var 'e' s.y) e.RHS)) e.Other
+	((s.y's -> 's.x's 's.y's') e.R1) (t.Tag ((var 'e' s.x) e.LHS)((var 'e' s.y) e.RHS)) e.Other
 		= <Eq (e.R1) <Sim (/* EMPTY */)
-			((<subst (assign (var 'e' s.y)((var 'e' s.x)(var 'e' s.y)))(/*EMPTY*/)(e.LHS)>)
+			(t.Tag (<subst (assign (var 'e' s.y)((var 'e' s.x)(var 'e' s.y)))(/*EMPTY*/)(e.LHS)>)
 			(<subst (assign (var 'e' s.y)((var 'e' s.x) (var 'e' s.y)))((var 'e' s.y))(e.RHS)>))
 			<subst_2 (assign (var 'e' s.y)((var 'e' s.x)(var 'e' s.y)))e.Other>
 		>>;
 	/* буквенная переменная */
-	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.R1) (((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)(s.Sym e.RHS)) e.Other
+	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.R1) (t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)(s.Sym e.RHS)) e.Other
 		= <Eq (e.R1)  <Sim ()
-			((<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.LHS)>)
+			(t.Tag (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.LHS)>)
             (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.RHS)>))
             <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))e.Other>
 		>>;
 	/* буквенная переменная */
-	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.R1) ((s.Sym e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
+	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.R1) (t.Tag (s.Sym e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
     	= <Eq (e.R1)  <Sim ()
-    		((<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.LHS)>)
+    		(t.Tag (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.LHS)>)
     		(<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))(/*Empty*/)(e.RHS)>))
     		<subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))e.Other>
     	>>;
     /* буквенная переменная */
-   	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.x6 s.x7 s.x8 s.x9 s.x10't') e.R1) (((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10) e.RHS)) e.Other
+   	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.x6 s.x7 s.x8 s.x9 s.x10't') e.R1) (t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10) e.RHS)) e.Other
    		= <Eq (e.R1) <Sim ()
-   			((<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))(/*Empty*/)(e.LHS)>)
+   			(t.Tag (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))(/*Empty*/)(e.LHS)>)
             (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))(/*Empty*/)(e.RHS)>))
             <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))e.Other>
    		>>;
    	/**/
-   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't ' s.x's') e.R1) (((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 'e' s.x) e.RHS)) e.Other
+   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't ' s.x's') e.R1) (t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 'e' s.x) e.RHS)) e.Other
    		= <Eq (e.R1)  <Sim ()
-   			((<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))(/*Empty*/)(e.LHS)>)
+   			(t.Tag (<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))(/*Empty*/)(e.LHS)>)
             (<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))((var 'e' s.x))(e.RHS)>))
             <subst_2 (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))e.Other>
    		>>;
    	/**/
-   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't ' s.x's') e.R1) (((var 'e' s.x) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
+   	((s.x's -> 's.x1 s.x2 s.x3 s.x4 s.x5't ' s.x's') e.R1) (t.Tag ((var 'e' s.x) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other
    		= <Eq (e.R1) <Sim ()
-   			((<subst (assign (var 'e' s.x) ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))((var 'e' s.x))(e.LHS)>)
+   			(t.Tag (<subst (assign (var 'e' s.x) ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))((var 'e' s.x))(e.LHS)>)
             (<subst (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))(/*Empty*/)(e.RHS)>))
             <subst_2 (assign (var 'e' s.x)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 'e' s.x)))e.Other>
    		>>;
@@ -235,8 +250,8 @@ subst {
  Входной формат:   (assign (var s.name) (e.Val)) e.Equations,
 где e.Equations либо пусто, либо начинается с уравнения вида ((e.LHS)(e.RHS)). */
 subst_2 {
-	t.Asg ((e.LHS)(e.RHS)) e.Other
-		= ((<subst t.Asg (/* EMPTY */) (e.LHS)>)(<subst t.Asg (/* EMPTY */) (e.RHS)>))
+	t.Asg (t.Tag (e.LHS)(e.RHS)) e.Other
+		= (t.Tag (<subst t.Asg (/* EMPTY */) (e.LHS)>)(<subst t.Asg (/* EMPTY */) (e.RHS)>))
 		<subst_2 t.Asg e.Other>;
 	t.Asg /* EMPTY */ = /* EMPTY */;
 }	
@@ -244,34 +259,34 @@ subst_2 {
 /* Модифицированная функция упрощения удаляет одинаковые термы с левой и правой стороны уравнения. Имеет входной формат ((e.LHS)(e.RHS))^*. */
 Sim {
 	/* 1a-left. Удаление одинаковых букв слева и справа. */
-	(e.Processed)((s.x e.LHS)(s.x e.RHS)) e.Other = <Sim (e.Processed)((e.LHS)(e.RHS)) e.Other>;
+	(e.Processed)(t.Tag (s.x e.LHS)(s.x e.RHS)) e.Other = <Sim (e.Processed)(t.Tag (e.LHS)(e.RHS)) e.Other>;
 	 /* 1a-right. Удаление одинаковых букв слева и справа. */
-	(e.Processed)((e.LHS s.x)(e.RHS s.x)) e.Other = <Sim (e.Processed)((e.LHS)(e.RHS)) e.Other>;
+	(e.Processed)(t.Tag (e.LHS s.x)(e.RHS s.x)) e.Other = <Sim (e.Processed)(t.Tag (e.LHS)(e.RHS)) e.Other>;
 	 /* 1б-left. Удаление одинаковых переменных. */
-	(e.Processed)(((var s.type s.n) e.LHS)((var s.type s.n) e.RHS)) e.Other = <Sim (e.Processed)((e.LHS)(e.RHS)) e.Other>;
+	(e.Processed)(t.Tag ((var s.type s.n) e.LHS)((var s.type s.n) e.RHS)) e.Other = <Sim (e.Processed)(t.Tag (e.LHS)(e.RHS)) e.Other>;
 	/* 1б-right. Удаление одинаковых переменных. */
-	(e.Processed)((e.LHS (var s.type s.n))(e.RHS (var s.type s.n))) e.Other = <Sim (e.Processed) ((e.LHS)(e.RHS)) e.Other>;
+	(e.Processed)(t.Tag (e.LHS (var s.type s.n))(e.RHS (var s.type s.n))) e.Other = <Sim (e.Processed) (t.Tag (e.LHS)(e.RHS)) e.Other>;
 	/* 2а. Уравнение преобразовано к тривиальному тождеству: возвращаем это тождество и упрощаем остальные уравнения в системе. */
-	(e.Processed)((/* EMPTY */)(/* EMPTY */)) e.Other = <Sim (e.Processed ((/* EMPTY */)(/* EMPTY */))) e.Other>;
+	(e.Processed)(t.Tag (/* EMPTY */)(/* EMPTY */)) e.Other = <Sim (e.Processed (t.Tag (/* EMPTY */)(/* EMPTY */))) e.Other>;
 	/* 2б-left. Уравнение преобразовано к тривиальному противоречию (поскольку предложение 2б находится ниже, чем 1а-left,
       то s.x не совпадает с s.y): возвращаем противоречивое уравнение и удаляем все остальные уравнения из системы. */
-	(e.Processed)((s.x e.LHS)(s.y e.RHS)) e.Other = ((s.x)(s.y));
+	(e.Processed)(t.Tag (s.x e.LHS)(s.y e.RHS)) e.Other = (t.Tag (s.x)(s.y));
 	/* 2б-right. Уравнение преобразовано к тривиальному противоречию (поскольку предложение 2б находится ниже, чем 1а-left,
       то s.x не совпадает с s.y): возвращаем противоречивое уравнение и удаляем все остальные уравнения из системы. */
-	(e.Processed)((e.LHS s.x)(e.RHS s.y)) e.Other = ((s.x)(s.y));
+	(e.Processed)(t.Tag (e.LHS s.x)(e.RHS s.y)) e.Other = (t.Tag (s.x)(s.y));
 	/**/
-	(e.Processed)(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other = <Sim (e.Processed)((e.LHS)(e.RHS)) e.Other>;
+	(e.Processed)(t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other = <Sim (e.Processed)(t.Tag(e.LHS)(e.RHS)) e.Other>;
 	/**/
-	(e.Processed)((e.LHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(e.RHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Other = <Sim (e.Processed)((e.LHS)(e.RHS)) e.Other>;
+	(e.Processed)(t.Tag(e.LHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(e.RHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Other = <Sim (e.Processed)(t.Tag (e.LHS)(e.RHS)) e.Other>;
 	/* 3. Уравнение не преобразовано к тривиальному противоречию, и сокращать больше нечего:
       пытаемся расщепить это уравнение и упрощаем остальные уравнения системы. */
-	(e.Processed)((e.x)(e.y)) e.Other = 
+	(e.Processed)(t.Tag (e.x)(e.y)) e.Other =
 		<Sim (e.Processed <Split
 			(/* EMPTY */)  /* уравнения – результаты расщепления */
 			'N' /* текущее состояние разбиения – неопределенное */
 			((Const ))((Const )) /* мультимножества букв и переменных частей уравнения пусты */
 			((/* EMPTY */)(/* EMPTY */)) /* отщепляемые префиксы тоже пусты */
-			((e.x)(e.y))  /* суффиксы совпадают со сторонами уравнения */
+			(t.Tag (e.x)(e.y))  /* суффиксы совпадают со сторонами уравнения */
 		>) e.Other>;
 	/* 4. Упрощать больше нечего – заканчиваем работу. */
 	(e.Processed)/* EMPTY */ = <SortContr (/* EMPTY */) e.Processed>;
@@ -286,28 +301,28 @@ SortContr {
 /* Модифицированная функция упрощения удаляет одинаковые термы с левой и правой стороны уравнения. Имеет входной формат ((e.LHS)(e.RHS))^*. */
 Sim2 {
 	 /* 1a-left. Удаление одинаковых букв слева и справа. */
-	((s.x e.LHS)(s.x e.RHS)) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
+	(t.Tag (s.x e.LHS)(s.x e.RHS)) e.Other = <Sim2 (t.Tag (e.LHS)(e.RHS)) e.Other>;
 	/* 1a-right. Удаление одинаковых букв слева и справа. */
-	((e.LHS s.x)(e.RHS s.x)) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
+	(t.Tag (e.LHS s.x)(e.RHS s.x)) e.Other = <Sim2 (t.Tag (e.LHS)(e.RHS)) e.Other>;
 	/* 1б-left. Удаление одинаковых переменных. */
-	(((var s.type s.n) e.LHS)((var s.type s.n) e.RHS)) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
+	(t.Tag ((var s.type s.n) e.LHS)((var s.type s.n) e.RHS)) e.Other = <Sim2 (t.Tag (e.LHS)(e.RHS)) e.Other>;
 	/* 1б-right. Удаление одинаковых переменных. */
-	((e.LHS (var s.type s.n))(e.RHS (var s.type s.n))) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
+	(t.Tag (e.LHS (var s.type s.n))(e.RHS (var s.type s.n))) e.Other = <Sim2 (t.Tag (e.LHS)(e.RHS)) e.Other>;
 	/**/
-	(((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
+	(t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.RHS)) e.Other = <Sim2 (t.Tag (e.LHS)(e.RHS)) e.Other>;
 	/**/
-	((e.LHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(e.RHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Other = <Sim2 ((e.LHS)(e.RHS)) e.Other>;
+	(t.Tag (e.LHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(e.RHS (var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Other = <Sim2 (t.Tag (e.LHS)(e.RHS)) e.Other>;
 	/* 2а. Уравнение преобразовано к тривиальному тождеству: возвращаем это тождество и упрощаем остальные уравнения в системе. */
-	((/* EMPTY */)(/* EMPTY */)) e.Other = ((/* EMPTY */)(/* EMPTY */)) <Sim2 e.Other>;
+	(t.Tag (/* EMPTY */)(/* EMPTY */)) e.Other = (t.Tag (/* EMPTY */)(/* EMPTY */)) <Sim2 e.Other>;
 	/* 2б-left. Уравнение преобразовано к тривиальному противоречию (поскольку предложение 2б находится ниже, чем 1а-left,
       то s.x не совпадает с s.y): возвращаем противоречивое уравнение и удаляем все остальные уравнения из системы. */
-	((s.x e.LHS)(s.y e.RHS)) e.Other = ((s.x)(s.y));
+	(t.Tag (s.x e.LHS)(s.y e.RHS)) e.Other = (t.Tag (s.x)(s.y));
 	/* 2б-right. Уравнение преобразовано к тривиальному противоречию (поскольку предложение 2б находится ниже, чем 1а-left,
       то s.x не совпадает с s.y): возвращаем противоречивое уравнение и удаляем все остальные уравнения из системы. */
-	((e.LHS s.x)(e.RHS s.y)) e.Other = ((s.x)(s.y));
+	(t.Tag (e.LHS s.x)(e.RHS s.y)) e.Other = (t.Tag (s.x)(s.y));
 	/* 3. Уравнение не преобразовано к тривиальному противоречию, и сокращать больше нечего:
       пытаемся расщепить это уравнение и упрощаем остальные уравнения системы. */
-	((e.x)(e.y)) e.Other = ((e.x)(e.y))<Sim2 e.Other>;
+	(t.Tag (e.x)(e.y)) e.Other = (t.Tag (e.x)(e.y))<Sim2 e.Other>;
 	/* 4. Упрощать больше нечего – заканчиваем работу. */
 	/* EMPTY */ = /* EMPTY */;
 }
@@ -328,40 +343,40 @@ Split {
 	/* 1а. Статус расщепления не определен (очередное отделение термов слева и справа уравнения еще не сделано), но осталось еще хотя бы по одному терму слева и справа уравнения.
       Присоединяем соответствующие термы справа к префиксам и включаем их в мультимножества элементов префиксов. После чего проверяем эти мультимножества на совпадение – вызываем
       функцию CountMS. */
-	(e.Result)'N'(e.MS1)(e.MS2)((e.LPref)(e.RPref))((t.L1 e.LHS)(t.R1 e.RHS))
+	(e.Result)'N'(e.MS1)(e.MS2)((e.LPref)(e.RPref))(t.Tag (t.L1 e.LHS)(t.R1 e.RHS))
 		= <Split 
 			(e.Result)
 			<CountMS <Include t.L1 (/* EMPTY */)(e.MS1)><Include t.R1 (/* EMPTY */)(e.MS2)>>
 			((e.LPref t.L1)(e.RPref t.R1))
-			((e.LHS)(e.RHS))
+			(t.Tag (e.LHS)(e.RHS))
 		>;
 	/* 1б. Статус текущего расщепления: некорректное. Делаем попытку следующего расщепления (см. предложение 1а). */
-	(e.Result)'F'(e.MS1)(e.MS2)((e.LPref)(e.RPref))((t.L1 e.LHS)(t.R1 e.RHS))
+	(e.Result)'F'(e.MS1)(e.MS2)((e.LPref)(e.RPref))(t.Tag (t.L1 e.LHS)(t.R1 e.RHS))
 		= <Split 
 			(e.Result)
 			<CountMS <Include t.L1 (/* EMPTY */)(e.MS1)><Include t.R1 (/* EMPTY */)(e.MS2)>>
 			((e.LPref t.L1)(e.RPref t.R1))
-			((e.LHS)(e.RHS))
+			(t.Tag (e.LHS)(e.RHS))
 		>;
 	/* 2. Статус текущего расщепления – корректное. Составляем из префиксов новое уравнение и переходим к анализу оставшейся части исходного уравнения, обнулив расщепление. */
-	(e.Result)'T'(e.MS1)(e.MS2)((e.LPref)(e.RPref))((e.LHS)(e.RHS))
+	(e.Result)'T'(e.MS1)(e.MS2)((e.LPref)(e.RPref))(t.Tag (e.LHS)(e.RHS))
 		= <Split
-			(e.Result ((e.LPref)(e.RPref)))
+			(e.Result (t.Tag (e.LPref)(e.RPref)))
 			'N'
 			((Const ))((Const ))
 			((/* EMPTY */)(/* EMPTY */))
-			<Sim2 ((e.LHS)(e.RHS))>
+			<Sim2 (t.Tag (e.LHS)(e.RHS))>
 		>;
 	/* 3. Расщеплять было нечего – уравнение пустое. Возвращаем все остальные уравнения. */
-	(e.Result)s.Log(e.MS1)(e.MS2)((/* EMPTY */)(/* EMPTY */))((/* EMPTY */)(/* EMPTY */))
+	(e.Result)s.Log(e.MS1)(e.MS2)((/* EMPTY */)(/* EMPTY */))(t.Tag (/* EMPTY */)(/* EMPTY */))
 		= e.Result;
 	/* 4. Или в левой, или в правой части уравнения больше не осталось термов: пытаемся расщепить остаток уравнения справа. */
-	(e.Result)s.Log(e.MS1)(e.MS2)((e.LPref)(e.RPref))((e.LHS)(e.RHS))
+	(e.Result)s.Log(e.MS1)(e.MS2)((e.LPref)(e.RPref))(t.Tag (e.LHS)(e.RHS))
 		= <SplitRight 
 			(e.Result)
 			'N'((Const ))((Const ))
 			((/* EMPTY */)(/* EMPTY */))
-			<Sim2 ((e.LPref e.LHS)(e.RPref e.RHS))>>;
+			<Sim2 (t.Tag (e.LPref e.LHS)(e.RPref e.RHS))>>;
 }
 
 /* Функция добавления элемента с кратностью 1 в мультимножество.
@@ -451,7 +466,7 @@ SplitRight {
 	/* 1а. Статус расщепления не определен, но осталось еще хотя бы по одному терму слева и справа в уравнении.
       Присоединяем соответствующие термы слева к префиксам и включаем их в мультимножества элементов префиксов.
       После чего проверяем эти мультимножества на совпадение. Вызываем функцию CountMS. */
-  (e.Result)'N'(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))((e.LHS t.LL)(e.RHS t.RL))
+  (e.Result)'N'(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))(t.Tag (e.LHS t.LL)(e.RHS t.RL))
 	= <SplitRight 
 		(e.Result)
 		<CountMS 
@@ -459,10 +474,10 @@ SplitRight {
 			<Include t.RL (/* EMPTY */)(e.MS2)>
 		>
 		((t.LL e.LSuff)(t.RL e.RSuff))
-		((e.LHS)(e.RHS))
+		(t.Tag (e.LHS)(e.RHS))
 	>;
 	/* 1б. Статус текущего расщепления: некорректное. Делаем попытку следующего расщепления (см. предложение 1а). */
-  (e.Result)'F'(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))((e.LHS t.LL)(e.RHS t.RL))
+  (e.Result)'F'(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))(t.Tag (e.LHS t.LL)(e.RHS t.RL))
 	= <SplitRight 
 		(e.Result)
 		<CountMS 
@@ -470,30 +485,30 @@ SplitRight {
 			<Include t.RL (/* EMPTY */)(e.MS2)>
 		>
 		((t.LL e.LSuff)(t.RL e.RSuff))
-		((e.LHS)(e.RHS))
+		(t.Tag (e.LHS)(e.RHS))
 	>;
 	/* 2. Статус текущего расщепления: корректное. Составляем из суффиксов новое уравнение и переходим к анализу оставшейся части исходного уравнения,
     обнулив расщепление. */
-  (e.Result)'T'(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))((e.LHS)(e.RHS))
+  (e.Result)'T'(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))(t.Tag (e.LHS)(e.RHS))
 	= <SplitRight
-		(e.Result ((e.LSuff)(e.RSuff)))
+		(e.Result (t.Tag (e.LSuff)(e.RSuff)))
 		'N'
 		((Const ))((Const ))
 		((/* EMPTY */)(/* EMPTY */))
-		<Sim2 ((e.LHS)(e.RHS))>
+		<Sim2 (t.Tag (e.LHS)(e.RHS))>
 	>;
 	/* 3. Расщеплять было нечего – уравнение пустое. Возвращаем все остальные уравнения системы. */
-  (e.Result)s.Log(e.MS1)(e.MS2)((/* EMPTY */)(/* EMPTY */))((/* EMPTY */)(/* EMPTY */))
+  (e.Result)s.Log(e.MS1)(e.MS2)((/* EMPTY */)(/* EMPTY */))(t.Tag (/* EMPTY */)(/* EMPTY */))
 		= e.Result;
 	/* 4. Или в левой, или в правой части уравнения больше не осталось термов – помещаем остаток уравнения в итоговую систему уравнений самым первым
     и проверяем, не является ли он противоречивым по кратности переменных. */
-  (e.Result)s.Log(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))((e.LHS)(e.RHS))
+  (e.Result)s.Log(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))(t.Tag (e.LHS)(e.RHS))
 	= <SubjugateEq 
 		<YieldCheckSubMS 
 			(<AddElsToMS (e.LHS)(e.MS1)>)
 			(<AddElsToMS (e.RHS)(e.MS2)>)
 		>
-		<Sim2 ((e.LHS e.LSuff)(e.RHS e.RSuff))>
+		<Sim2 (t.Tag (e.LHS e.LSuff)(e.RHS e.RSuff))>
 	> 
 	e.Result;
 }
@@ -501,8 +516,8 @@ SplitRight {
 /* Функция вывода результата анализа уравнения на противоречивость по кратности. Если уравнение оказывается противоречиво (правило 2),
   тогда оно заменяется на тривиально противоречивое уравнение. */
 SubjugateEq {
-	False ((e.Eq1)(e.Eq2)) = ((e.Eq1)(e.Eq2));
-	True ((e.Eq1)(e.Eq2)) = (('A')('B'));
+	False (t.Tag (e.Eq1)(e.Eq2)) = (t.Tag (e.Eq1)(e.Eq2));
+	True (t.Tag (e.Eq1)(e.Eq2)) = (t.Tag ('A')('B'));
 }
 
 /* Решение задачи:
@@ -565,12 +580,12 @@ AddElsToMS {
 
 /* Вспомогательная функция поиска максимальной t переменной */
 FindMaxNameT {
-	(e.Max)(((var 't' e.Name) e.LHS)(e.RHS)) e.Other = <FindMaxNameT (<SelectMax (e.Name) (e.Max)>) ((e.LHS)(e.RHS)) e.Other>;
-	(e.Max)((e.LHS)((var 't' e.Name) e.RHS)) e.Other = <FindMaxNameT (<SelectMax (e.Name) (e.Max)>) ((e.LHS)(e.RHS)) e.Other>;
-	(e.Max)((t.Any e.LHS)(t.Any2 e.RHS)) e.Other = <FindMaxNameT (e.Max) ((e.LHS)(e.RHS)) e.Other>;
-	(e.Max)((t.Any e.LHS)()) e.Other = <FindMaxNameT (e.Max) ((e.LHS)()) e.Other>;
-	(e.Max)(()(t.Any e.RHS)) e.Other = <FindMaxNameT (e.Max) (()(e.RHS)) e.Other>;
-	(e.Max)((/*EMPTY*/)(/*EMPTY*/)) e.Other = <FindMaxNameT (e.Max) e.Other>;
+	(e.Max)(t.Tag ((var 't' e.Name) e.LHS)(e.RHS)) e.Other = <FindMaxNameT (<SelectMax (e.Name) (e.Max)>) (t.Tag (e.LHS)(e.RHS)) e.Other>;
+	(e.Max)(t.Tag (e.LHS)((var 't' e.Name) e.RHS)) e.Other = <FindMaxNameT (<SelectMax (e.Name) (e.Max)>) (t.Tag (e.LHS)(e.RHS)) e.Other>;
+	(e.Max)(t.Tag (t.Any e.LHS)(t.Any2 e.RHS)) e.Other = <FindMaxNameT (e.Max) (t.Tag (e.LHS)(e.RHS)) e.Other>;
+	(e.Max)(t.Tag (t.Any e.LHS)()) e.Other = <FindMaxNameT (e.Max) (t.Tag (e.LHS)()) e.Other>;
+	(e.Max)(t.Tag ()(t.Any e.RHS)) e.Other = <FindMaxNameT (e.Max) (t.Tag ()(e.RHS)) e.Other>;
+	(e.Max)(t.Tag (/*EMPTY*/)(/*EMPTY*/)) e.Other = <FindMaxNameT (e.Max) e.Other>;
 	(e.Max) /* EMPTY */ = e.Max;
 }
 
@@ -673,34 +688,45 @@ IncSym {
 /*********************************************************************************************************************/
 
 DiophantineSolve {
-	(e.System) = <DiophantineSolve BuildSet (e.System) <ToLengthSystemEquation () e.System>>;
-	BuildSet (e.System) (e.Decoded) = <DiophantineSolve FillSystem (e.System) (e.Decoded) <BuildAllMap (e.Decoded) ()>>;
-	FillSystem (e.System) (e.Decoded) (e.AllSet) t.Size
+	(e.System) = <DiophantineSolve Split <SplitGenerated (e.System)>>;
+	Split (e.Generated) (e.System) = <DiophantineSolve BuildSet (e.Generated) (e.System) <ToLengthSystemEquation () e.System>>;
+	BuildSet (e.Generated) (e.System) (e.Decoded) = <DiophantineSolve FillSystem (e.Generated) (e.System) (e.Decoded) <BuildAllMap (e.Decoded) ()>>;
+	FillSystem (e.Generated) (e.System) (e.Decoded) (e.AllSet) t.Size
 		= <DiophantineSolve
 			RE
+			(e.Generated)
 			(e.System)
 			(e.AllSet)
 			(<FillAll () (e.Decoded) (e.AllSet)>)
 			<BuildEMatrix t.Size>>;
-	RE (e.System) (e.AllSet) (e.Filled) (e.Matrix) =
+	RE (e.Generated) (e.System) (e.AllSet) (e.Filled) (e.Matrix) =
 		<DiophantineSolve
 			K
+			(e.Generated)
 			(e.System)
 			(e.AllSet)
 			<MakeRowEchelon <MatrixFromMaps () (e.Filled)> (e.Matrix)>
 			<GetRHS (e.Filled) ()>>;
-	K (e.System) (e.AllSet) (e.RowEchelon) (e.Matrix) (e.RHS) =
+	K (e.Generated) (e.System) (e.AllSet) (e.RowEchelon) (e.Matrix) (e.RHS) =
 		<DiophantineSolve
 			X
+			(e.Generated)
 			(e.System)
 			(e.AllSet)
 			<TransposeMatrix () (e.Matrix)>
 			<FindK <TransposeMatrix () (e.RowEchelon)> (e.RHS)>>;
-	X (e.System) (e.AllSet) (e.Matrix) False = False;
-	X (e.System) (e.AllSet) (e.Matrix) (e.K) = <DiophantineSolve Assign (e.System) (e.AllSet) (e.Matrix) (e.K) <CalcSolution (e.Matrix) (e.AllSet) (e.K)>>;
-	Assign (e.System) (e.AllSet) (e.Matrix) (e.K) False = False;
-	Assign (e.System) (e.AllSet) (e.Matrix) (e.K) (e.Result) = <DiophantineSolve Apply (e.System) (e.Result)>;
-	Apply (e.System) (e.Solution) = <ApplySolution (e.System) (e.Solution)>;
+	X (e.Generated) (e.System) (e.AllSet) (e.Matrix) False = False;
+	X (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) = <DiophantineSolve Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) <CalcSolution (e.Matrix) (e.AllSet) (e.K)>>;
+	Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) False = False;
+	Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) (e.Result) = <DiophantineSolve Apply (e.Generated) (e.System) (e.Result)>;
+	Apply (e.Generated) (e.System) (e.Solution) = e.Generated <ApplySolution (e.System) (e.Solution)>;
+}
+
+/*отделяем сгенерированные решателем диофантовых уравнения*/
+SplitGenerated {
+	(e.System) = <SplitGenerated () (e.System)>;
+	(e.Result) ((Generated e.Any) e.Other) = <SplitGenerated (e.Result (Generated e.Any)) (e.Other)>;
+	(e.Result) (e.Other) = (e.Result) (e.Other);
 }
 
 /*сборка мапа с счетчиками переменных*/
@@ -753,7 +779,7 @@ SubMaps {
 /*перевод системы уравнений в систему уравнений на длины*/
 ToLengthSystemEquation {
 	/*переводим очередное уравнение*/
-	(e.Result) ((e.LHS)(e.RHS)) e.Rest = <ToLengthSystemEquation (e.Result <SubMaps (<BuildMap (e.LHS) ((Const (0)))>) (<BuildMap (e.RHS) ((Const (0)))>)>) e.Rest>;
+	(e.Result) (t.Tag (e.LHS)(e.RHS)) e.Rest = <ToLengthSystemEquation (e.Result <SubMaps (<BuildMap (e.LHS) ((Const (0)))>) (<BuildMap (e.RHS) ((Const (0)))>)>) e.Rest>;
 	/*закончили - дополняем все уравнения нехватающими переменными и сортируем*/
 	(e.Result) = (e.Result);
 }
@@ -1155,6 +1181,9 @@ AddToKOrStop {
 }
 
 CalculateK {
+	() (e.Processed) () 0 = (e.Processed);
+	() (e.Processed) () (0) = (e.Processed);
+	() (e.Processed) () t.Any = False;
 	(t.C e.Row) (e.Processed) ((s.Var t.C2) e.K) t.Value = <CalculateK (e.Row) (e.Processed (s.Var t.C2)) (e.K) <SubUnwrap t.Value <MulUnwrap t.C t.C2>>>;
 	(t.C e.Row) (e.Processed) ((s.Var) e.K) t.Value = <AddToKOrStop (e.Processed) (e.K) s.Var t.C t.Value>;
 }
@@ -1224,7 +1253,7 @@ GenerateLetterVars {
 
 TryFirstReplaceDifferent {
 	(e.System) s.Name s.Name2 t.Diff (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplaceDifferent RE (e.System) s.Name s.Name2 <GenerateLetterVars t.Diff (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
-	RE (e.System) s.Name s.Name2 (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = ((((var 'e' s.Name)) ((var 'e' s.Name2) e.List)) <Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.Name2) e.List))>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	RE (e.System) s.Name s.Name2 (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = ((Generated ((var 'e' s.Name)) ((var 'e' s.Name2) e.List)) <Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.Name2) e.List))>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
 }
 
 TryFirstReplaceIfHasSolution {
@@ -1236,22 +1265,22 @@ TryFirstReplaceIfHasSolution {
 	(e.System) s.Name s.Name2 (e.Solution) () (t.Count) (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5);
 	(e.System) s.Name s.Name2 (e.Solution) () () (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5);
 	(e.System) s.Name s.Name2 (e.Solution) ('-' t.Diff) '-' (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Solution) <TryFirstReplaceDifferent (e.System) s.Name2 s.Name t.Diff (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	(e.System) s.Name s.Name2 (e.Solution) t.Diff '0' (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Solution) ((((var 'e' s.Name))((var 'e' s.Name2))) <Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.Name2)))e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	(e.System) s.Name s.Name2 (e.Solution) t.Diff '0' (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Solution) ((Generated ((var 'e' s.Name))((var 'e' s.Name2))) <Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.Name2)))e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
 	(e.System) s.Name s.Name2 (e.Solution) t.Diff '+' (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Solution) <TryFirstReplaceDifferent (e.System) s.Name s.Name2 t.Diff (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
 
 TryFirstReplace {
 	((e.First) e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplace Started (e.System) (e.First) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	Started (e.System) (((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
-		= <TryFirstReplaceIfHasSolution ((((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System) s.Name s.Name2 (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	Started (e.System) ((e.LHS)(e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Solution) (((e.LHS)(e.RHS)) e.System) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	Started (e.System) (t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <TryFirstReplaceIfHasSolution ((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System) s.Name s.Name2 (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Started (e.System) (t.Tag (e.LHS)(e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Solution) ((t.Tag (e.LHS)(e.RHS)) e.System) (s.x1 s.x2 s.x3 s.x4 s.x5);
 }
 
 ReplaceSingle {
 	(e.System) s.Name (0) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle (e.System) s.Name 0 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	(e.System) s.Name 0 (s.x1 s.x2 s.x3 s.x4 s.x5) = (<Sim () <subst_2 (assign (var 'e' s.Name)()) e.System> (((var 'e' s.Name))())>) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	(e.System) s.Name 0 (s.x1 s.x2 s.x3 s.x4 s.x5) = (<Sim () (Generated ((var 'e' s.Name))()) <subst_2 (assign (var 'e' s.Name)()) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
 	(e.System) s.Name t.Count (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle RE (e.System) s.Name <GenerateLetterVars t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
-	RE (e.System) s.Name (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = ((((var 'e' s.Name))(e.List)) <Sim () <subst_2 (assign (var 'e' s.Name)(e.List)) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	RE (e.System) s.Name (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = ((Generated ((var 'e' s.Name))(e.List)) <Sim () <subst_2 (assign (var 'e' s.Name)(e.List)) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
 }
 
 ApplySolution {
