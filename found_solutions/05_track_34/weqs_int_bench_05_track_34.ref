@@ -2,30 +2,6 @@
 *$MATCHING ForRepeatedSpecialization;
 *$STRATEGY Applicative;
 
-(
-((ccee(var eG)(var eA)ead(var eA)bbd(var eA)e(var eA)e(var eA))((var eH)e(var eA)e(var eI)ae(var eA)d(var eA)bbdae(var eA)ea))
-(((var eA)cdfbec(var eA)fdfbdcf(var eA)cccbb(var eA))(acdfbecafdfbdcf(var eA)cccbba))
-((adeffbefdcebd(var eA)eb(var eC)(var eA)ddbeda)((var eA)deffbefdcebd(var eA)ebb(var eA)(var eA)ddbed(var eA)))((a(var eA))((var eA)a))
-)
-(
-(((var eC))((var tAAAAC)(var tAAAAD)))
-(((var eA))((var tAAAAB)))
-((ccee(var eG)) ((var eH)e(var tAAAAB)e(var eI)))
-(((var tAAAAB))(a))
-(((var tAAAAB))(a))
-((a)((var tAAAAB)))
-(((var tAAAAB))(a))
-(((var tAAAAB))(a))
-(((var tAAAAB))(a))
-(((var tAAAAB))(a))
-(((var tAAAAC))(b))
-(((var tAAAAD))((var tAAAAB)))
-((a)((var tAAAAB)))
-((a)((var tAAAAB)))
-((a)((var tAAAAB)))
-(((var tAAAAB))(a))
-)
-
 $ENTRY Go
 { (e.Rules) =
 <Eq (e.Rules) <Sim ( )
