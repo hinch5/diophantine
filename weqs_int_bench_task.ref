@@ -1337,9 +1337,24 @@ FirstReplace {
 		= <FirstReplaceDifferent (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
 
+HasConstSymbol {
+	() = 'F';
+	(s.Sym e.Rest) = 'T';
+	(t.Any e.Rest) = <HasConstSymbol (e.Rest)>
+}
+
+FirstReplaceSingle {
+	(e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) 'F' = e.System;
+	(e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) 'T' = <FirstReplaceDifferent (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+}
+
 TryFirstReplace {
 	() (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = ();
 	(t.First e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplace Started (e.System) t.First (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Started (e.System) (t.Tag ((var 'e' s.Name))((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
+    	= <FirstReplaceSingle ((t.Tag ((var 'e' s.Name))((var 'e' s.Name2) e.RHS)) e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) <HasConstSymbol (e.RHS)>>;
+    Started (e.System) (t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2))) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
+    	= <FirstReplaceSingle ((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2))) e.System) s.Name2 s.Name (s.x1 s.x2 s.x3 s.x4 s.x5) <HasConstSymbol (e.LHS)>>;
 	Started (e.System) (t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
 		= <FirstReplace ((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System) s.Name s.Name2 (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 	Started (e.System) (t.Tag (e.LHS)(e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = (t.Tag (e.LHS)(e.RHS)) e.System;
