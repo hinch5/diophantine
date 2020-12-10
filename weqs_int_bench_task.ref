@@ -719,7 +719,10 @@ DiophantineSolve {
 	X (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) = <DiophantineSolve Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) <CalcSolution (e.Matrix) (e.AllSet) (e.K)>>;
 	Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) False = False;
 	Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) (e.Result) = <DiophantineSolve Apply (e.Generated) (e.System) (e.Result)>;
-	Apply (e.Generated) (e.System) (e.Solution) = <ApplySolution (e.Generated) (e.System) (e.Solution)>;
+	Apply (e.Generated) (e.System) (e.Solution) = <DiophantineSolve Check (<ApplySolution (e.Generated) (e.System) (e.Solution)>)>;
+	Check (e.System) = <DiophantineSolve Checked (e.System) <FindTVarsContradiction (e.System)>>;
+	Checked (e.System) False = False;
+	Checked (e.System) = e.System;
 }
 
 /*отделяем сгенерированные решателем диофантовых уравнения*/
@@ -1215,14 +1218,6 @@ MultiplyRowColumn {
 	(t.A e.Row) ((s.Name t.K) e.K) ((Const t.Value) e.Result) = <MultiplyRowColumn (e.Row) (e.K) ((Const <AddUnwrap t.Value <MulUnwrap t.A t.K>>) e.Result)>;
 }
 
-/*MultiplyRowColumn {
-	(e.Row) (e.K) = <MultiplyRowColumn (e.Row) (e.K) (0)>;
-	() () t.Value = t.Value <IsNegative t.Value>;
-	((0) e.Row) ((s.Name e.Any) e.K) t.Value = <MultiplyRowColumn (e.Row) (e.K) t.Value>;
-	(t.A e.Row) ((s.Name) e.K) t.Value = 'U';
-	(t.A e.Row) ((s.Name t.K) e.K) t.Value = <MultiplyRowColumn (e.Row) (e.K) <AddUnwrap t.Value <MulUnwrap t.A t.K>>>;
-}*/
-
 CheckSolutions {
 	(e.List) = <CheckSolutions () (e.List)>;
 	(e.Result) () = (e.Result);
@@ -1423,4 +1418,47 @@ ApplySolution {
 	Replace (e.Processed) ((s.Name t.Any) e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution Replace (e.Processed (s.Name t.Any)) (e.Solution) <TryReplaceSingle (e.Generated) (e.System) s.Name t.Any (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
 	Replace (e.Processed) () (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution First (e.Processed) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 	First (e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplace (e.Generated) (e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+}
+
+IsTVarValid {
+	() (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym = ;
+	((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym2)) e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym = False;
+	((t.Tag (s.Sym2)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym = False;
+	(t.Eq e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym = <IsTVarValid (e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym>;
+}
+
+CheckTVars {
+	() = ;
+	((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym)) e.Set) = <CheckTVars (e.Set) <IsTVarValid (e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym>>;
+	((t.Tag (s.Sym)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Set) = <CheckTVars (e.Set) <IsTVarValid (e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym>>;
+	(e.Set) False = False;
+}
+
+ReplaceTVar {
+	(e.Set) (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 't' s.x6 s.x7 s.x8 s.x9 s.x10) = <ReplaceTVar () (e.Set) (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 't' s.x6 s.x7 s.x8 s.x9 s.x10)>;
+	(e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym)) e.Set) (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 't' s.x6 s.x7 s.x8 s.x9 s.x10) = <ReplaceTVar (e.Processed (t.Tag ((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))(s.Sym))) (e.Set) (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 't' s.x6 s.x7 s.x8 s.x9 s.x10)>;
+	(e.Processed) ((t.Tag (s.Sym)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Set) (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 't' s.x6 s.x7 s.x8 s.x9 s.x10) = <ReplaceTVar (e.Processed (t.Tag (s.Sym)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))) (e.Set) (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 't' s.x6 s.x7 s.x8 s.x9 s.x10)>;
+	(e.Processed) ((t.Tag (e.LHS)(e.RHS)) e.Set) (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 't' s.x6 s.x7 s.x8 s.x9 s.x10) = <ReplaceTVar (e.Processed (t.Tag (e.LHS)(e.RHS))) (e.Set) (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 't' s.x6 s.x7 s.x8 s.x9 s.x10)>;
+	(e.Processed) () (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 't' s.x6 s.x7 s.x8 s.x9 s.x10) = (e.Processed);
+}
+
+ReplaceTVars {
+	(e.System) (e.Set) = <ReplaceTVars () (e.System) (e.Set)>;
+	(e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) ((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))) e.System) (e.Set)
+		= <ReplaceTVars
+			(e.Processed (t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5)) ((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))))
+			(e.System)
+			<ReplaceTVar (e.Set) (var 't' s.x1 s.x2 s.x3 s.x4 s.x5) (var 't' s.x6 s.x7 s.x8 s.x9 s.x10)>>;
+	(e.Processed) (t.Eq e.System) (e.Set) = <ReplaceTVars (e.Processed t.Eq) (e.System) (e.Set)>;
+	(e.Processed) () (e.Set) = <CheckTVars (e.Set)>;
+}
+
+FindTVarsContradiction {
+	(e.System) = <FindTVarsContradiction () (e.System) ()>;
+	(e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym)) e.System) (e.Set)
+		= <FindTVarsContradiction (e.Processed (t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym))) (e.System) (e.Set (t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym)))>;
+	(e.Processed) ((t.Tag (s.Sym)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.System) (e.Set)
+		= <FindTVarsContradiction (e.Processed (t.Tag (s.Sym)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5)))) (e.System) (e.Set (t.Tag (s.Sym)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))))>;
+	(e.Processed) (t.Eq e.System) (e.Set) = <FindTVarsContradiction (e.Processed t.Eq) (e.System) (e.Set)>;
+	(e.Processed) () (e.Set) = <ReplaceTVars (e.Processed) (e.Set)>;
 }
