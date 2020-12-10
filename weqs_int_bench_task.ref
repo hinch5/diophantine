@@ -1422,6 +1422,8 @@ ApplySolution {
 
 IsTVarValid {
 	() (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym = ;
+	((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym)) e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym = <IsTVarValid (e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym>;
+	((t.Tag (s.Sym)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym = <IsTVarValid (e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym>;
 	((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym2)) e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym = False;
 	((t.Tag (s.Sym2)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym = False;
 	(t.Eq e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym = <IsTVarValid (e.Set) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym>;
