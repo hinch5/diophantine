@@ -719,7 +719,7 @@ DiophantineSolve {
 	X (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) = <DiophantineSolve Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) <CalcSolution (e.Matrix) (e.AllSet) (e.K)>>;
 	Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) False = False;
 	Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) (e.Result) = <DiophantineSolve Apply (e.Generated) (e.System) (e.Result)>;
-	Apply (e.Generated) (e.System) (e.Solution) = e.Generated <ApplySolution (e.System) (e.Solution)>;
+	Apply (e.Generated) (e.System) (e.Solution) = <ApplySolution (e.Generated) (e.System) (e.Solution)>;
 }
 
 /*отделяем сгенерированные решателем диофантовых уравнения*/
@@ -1302,11 +1302,11 @@ IsUsedVar {
 	((t.Tag ()()) e.System) s.Sym = <IsUsedVar (e.System) s.Sym>;
 	((t.Tag ((var 'e' s.Sym) e.LHS)(e.RHS)) e.System) s.Sym = 'T';
 	((t.Tag (e.LHS)((var 'e' s.Sym) e.RHS)) e.System) s.Sym = 'T';
-	((t.Tag (s.Any e.LHS)(e.RHS)) e.System) s.Sym = <IsUsedVar ((t.Tag (e.LHS)(e.RHS)) e.System) s.Sym>;
-    ((t.Tag (e.LHS)(s.Any e.RHS)) e.System) s.Sym = <IsUsedVar ((t.Tag (e.LHS)(e.RHS)) e.System) s.Sym>;
-    ((t.Tag (s.Any e.LHS)(s.Any2 e.RHS)) e.System) s.Sym = <IsUsedVar ((t.Tag (e.LHS)(e.RHS)) e.System) s.Sym>;
 	((t.Tag (t.Any e.LHS)(e.RHS)) e.System) s.Sym = <IsUsedVar ((t.Tag (e.LHS)(e.RHS)) e.System) s.Sym>;
 	((t.Tag (e.LHS)(t.Any e.RHS)) e.System) s.Sym = <IsUsedVar ((t.Tag (e.LHS)(e.RHS)) e.System) s.Sym>;
+	((t.Tag (s.Any e.LHS)(e.RHS)) e.System) s.Sym = <IsUsedVar ((t.Tag (e.LHS)(e.RHS)) e.System) s.Sym>;
+	((t.Tag (e.LHS)(s.Any e.RHS)) e.System) s.Sym = <IsUsedVar ((t.Tag (e.LHS)(e.RHS)) e.System) s.Sym>;
+    ((t.Tag (s.Any e.LHS)(s.Any2 e.RHS)) e.System) s.Sym = <IsUsedVar ((t.Tag (e.LHS)(e.RHS)) e.System) s.Sym>;
 	((t.Tag (t.Any e.LHS)(t.Any2 e.RHS)) e.System) s.Sym = <IsUsedVar ((t.Tag (e.LHS)(e.RHS)) e.System) s.Sym>;
 }
 
@@ -1318,23 +1318,23 @@ SubSolutions {
 }
 
 FirstReplaceDifferent {
-	(e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) = <FirstReplaceDifferent (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) <FindUnusedVar (e.System)>>;
-	(e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) s.NextName
-		= (Generated ((var 'e' s.Name))((var 'e' s.Name2)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 'e' s.NextName))) <Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.Name2)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 'e' s.NextName))) e.System>>;
+	(e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) = <FirstReplaceDifferent (e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) <FindUnusedVar (e.Generated e.System)>>;
+	(e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) s.NextName
+		= (Generated ((var 'e' s.Name))((var 'e' s.Name2)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 'e' s.NextName))) <Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.Name2)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 'e' s.NextName))) e.Generated e.System>>;
 }
 
 FirstReplace {
-	(e.System) s.Name s.Name2 (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
-		= <FirstReplace Started (e.System) s.Name s.Name2 (e.Solution) <TruncateSolution <SubSolutions <FindInSolution (e.Solution) s.Name> <FindInSolution (e.Solution) s.Name2>>> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	Started (e.System) s.Name s.Name2 (e.Solution) 'F' (s.x1 s.x2 s.x3 s.x4 s.x5) = e.System;
-	Started (e.System) s.Name s.Name2 (e.Solution) t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)
-		= <FirstReplace Correct (e.System) s.Name s.Name2 (e.Solution) <IsNegative t.Count> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	Correct (e.System) s.Name s.Name2 (e.Solution) '-' (s.x1 s.x2 s.x3 s.x4 s.x5)
-		= <FirstReplaceDifferent (e.System) s.Name2 s.Name (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	Correct (e.System) s.Name s.Name2 (e.Solution) '0' (s.x1 s.x2 s.x3 s.x4 s.x5)
-		= (Generated ((var 'e' s.Name2))((var 'e' s.Name))) <Sim () <subst_2 (assign (var 'e' s.Name2)((var 'e' s.Name))) e.System>>;
-	Correct (e.System) s.Name s.Name2 (e.Solution) '+' (s.x1 s.x2 s.x3 s.x4 s.x5)
-		= <FirstReplaceDifferent (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	(e.Generated) (e.System) s.Name s.Name2 (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <FirstReplace Started (e.Generated) (e.System) s.Name s.Name2 (e.Solution) <TruncateSolution <SubSolutions <FindInSolution (e.Solution) s.Name> <FindInSolution (e.Solution) s.Name2>>> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Started (e.Generated) (e.System) s.Name s.Name2 (e.Solution) 'F' (s.x1 s.x2 s.x3 s.x4 s.x5) = e.Generated e.System;
+	Started (e.Generated) (e.System) s.Name s.Name2 (e.Solution) t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <FirstReplace Correct (e.Generated) (e.System) s.Name s.Name2 (e.Solution) <IsNegative t.Count> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Correct (e.Generated) (e.System) s.Name s.Name2 (e.Solution) '-' (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <FirstReplaceDifferent (e.Generated) (e.System) s.Name2 s.Name (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Correct (e.Generated) (e.System) s.Name s.Name2 (e.Solution) '0' (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= (Generated ((var 'e' s.Name2))((var 'e' s.Name))) <Sim () <subst_2 (assign (var 'e' s.Name2)((var 'e' s.Name))) e.Generated e.System>>;
+	Correct (e.Generated) (e.System) s.Name s.Name2 (e.Solution) '+' (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <FirstReplaceDifferent (e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
 
 HasConstSymbol {
@@ -1344,27 +1344,63 @@ HasConstSymbol {
 }
 
 FirstReplaceSingle {
-	(e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) 'F' = e.System;
-	(e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) 'T' = <FirstReplaceDifferent (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	(e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) 'F' = e.Generated e.System;
+	(e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) 'T' = <FirstReplaceDifferent (e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
 
 TryFirstReplace {
-	() (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = ();
-	(t.First e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplace Started (e.System) t.First (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	Started (e.System) (t.Tag ((var 'e' s.Name))((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
-    	= <FirstReplaceSingle ((t.Tag ((var 'e' s.Name))((var 'e' s.Name2) e.RHS)) e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) <HasConstSymbol (e.RHS)>>;
-    Started (e.System) (t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2))) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
-    	= <FirstReplaceSingle ((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2))) e.System) s.Name2 s.Name (s.x1 s.x2 s.x3 s.x4 s.x5) <HasConstSymbol (e.LHS)>>;
-	Started (e.System) (t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
-		= <FirstReplace ((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System) s.Name s.Name2 (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	Started (e.System) (t.Tag (e.LHS)(e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = (t.Tag (e.LHS)(e.RHS)) e.System;
+	() () (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = ;
+	(e.Generated) (t.First e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
+	 	= <TryFirstReplace Started (e.Generated) (e.System) t.First (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Started (e.Generated) (e.System) (t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <TryFirstReplace
+				Started
+				(e.Generated)
+				((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System)
+				(e.Solution)
+				<TruncateSolution <SubSolutions <FindInSolution (e.Solution) s.Name> <FindInSolution (e.Solution) s.Name2>>>
+				(s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	/*точно отношения нет, но правая часть состоит ровно из одной переменной*/
+	Started (e.Generated) ((t.Tag ((var 'e' s.Name))((var 'e' s.Name2) e.RHS)) e.System) (e.Solution) 'F' (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <FirstReplaceSingle
+			(e.Generated)
+			((t.Tag ((var 'e' s.Name))((var 'e' s.Name2) e.RHS)) e.System)
+			s.Name
+			s.Name2
+			(s.x1 s.x2 s.x3 s.x4 s.x5)
+			<HasConstSymbol (e.RHS)>>;
+	/*точно отношения нет, но левая часть состоит ровно из одной переменной*/
+	Started (e.Generated) ((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2))) e.System) (e.Solution) 'F' (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <FirstReplaceSingle
+			(e.Generated)
+			((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2))) e.System)
+			s.Name2
+			s.Name
+			(s.x1 s.x2 s.x3 s.x4 s.x5)
+			<HasConstSymbol (e.LHS)>>;
+	/*точно отношения нет*/
+	Started (e.Generated) ((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System) (e.Solution) 'F' (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= e.Generated (t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System;
+	/*есть точное отношение*/
+	Started (e.Generated) ((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System) (e.Solution) t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <FirstReplace
+			Started
+			(e.Generated)
+			((t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System)
+			s.Name
+			s.Name2
+			(e.Solution)
+			t.Count
+			(s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	/*одна из частей уравнения (или обе) не начинаются с переменной*/
+	Started (e.Generated) (e.System) (t.Tag (e.LHS)(e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) = e.Generated (t.Tag (e.LHS)(e.RHS)) e.System;
 }
 
 ReplaceSingle {
-	(e.System) s.Name (0) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle (e.System) s.Name 0 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	(e.System) s.Name 0 (s.x1 s.x2 s.x3 s.x4 s.x5) = (<Sim () (Generated ((var 'e' s.Name))()) <subst_2 (assign (var 'e' s.Name)()) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
-	(e.System) s.Name t.Count (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle RE (e.System) s.Name <GenerateLetterVars t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
-	RE (e.System) s.Name (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = ((Generated ((var 'e' s.Name))(e.List)) <Sim () <subst_2 (assign (var 'e' s.Name)(e.List)) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	(e.Generated) (e.System) s.Name (0) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle (e.Generated) (e.System) s.Name 0 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	(e.Generated) (e.System) s.Name 0 (s.x1 s.x2 s.x3 s.x4 s.x5) = ((Generated ((var 'e' s.Name))()) <Sim () <subst_2 (assign (var 'e' s.Name)()) e.Generated>>) (<Sim () <subst_2 (assign (var 'e' s.Name)()) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	(e.Generated) (e.System) s.Name t.Count (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle RE (e.Generated) (e.System) s.Name <GenerateLetterVars t.Count (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
+	RE (e.Generated) (e.System) s.Name (e.List) (s.x1 s.x2 s.x3 s.x4 s.x5) = ((Generated ((var 'e' s.Name))(e.List)) <Sim () <subst_2 (assign (var 'e' s.Name)(e.List)) e.Generated>>) ( <Sim () <subst_2 (assign (var 'e' s.Name)(e.List)) e.System>>) (s.x1 s.x2 s.x3 s.x4 s.x5);
 }
 
 TruncateSolution {
@@ -1375,16 +1411,16 @@ TruncateSolution {
 }
 
 TryReplaceSingle {
-	(e.System) s.Name t.Solution (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryReplaceSingle Replace (e.System) s.Name <TruncateSolution t.Solution> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	Replace (e.System) s.Name 'F' (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5);
-	Replace (e.System) s.Name t.Value (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle (e.System) s.Name t.Value (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	(e.Generated) (e.System) s.Name t.Solution (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryReplaceSingle Replace (e.Generated) (e.System) s.Name <TruncateSolution t.Solution> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Replace (e.Generated) (e.System) s.Name 'F' (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5);
+	Replace (e.Generated) (e.System) s.Name t.Value (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle (e.Generated) (e.System) s.Name t.Value (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
 
 ApplySolution {
-	(e.System) () = e.System;
-	(e.System) (e.Solution) = <ApplySolution (e.Solution) (e.System) (<NextNameT <FindMaxNameT () e.System>>)>;
-	(e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution Replace () (e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	Replace (e.Processed) ((s.Name t.Any) e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution Replace (e.Processed (s.Name t.Any)) (e.Solution)  <TryReplaceSingle (e.System) s.Name t.Any (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
-	Replace (e.Processed) () (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution First (e.Processed) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	First (e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplace (e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	(e.Generated) (e.System) () = e.Generated e.System;
+	(e.Generated) (e.System) (e.Solution) = <ApplySolution (e.Generated) (e.Solution) (e.System) (<NextNameT <FindMaxNameT () e.Generated e.System>>)>;
+	(e.Generated) (e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution Replace () (e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Replace (e.Processed) ((s.Name t.Any) e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution Replace (e.Processed (s.Name t.Any)) (e.Solution) <TryReplaceSingle (e.Generated) (e.System) s.Name t.Any (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
+	Replace (e.Processed) () (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution First (e.Processed) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	First (e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplace (e.Generated) (e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
