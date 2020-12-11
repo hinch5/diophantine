@@ -1,0 +1,4 @@
+Variables {CA}
+Terminals {}
+Equation: As = AAAAAt AAAABt AAAACt AAAADt AAAAEt AAAAFt AAAAGt AAAAHt AAAAIt AAAAJt AAAAKt AAAALt AAAAMt AAAANt AAAAOt AAAAPt
+SatGlucose(100)
