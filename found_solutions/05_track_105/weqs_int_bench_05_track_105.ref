@@ -5,14 +5,12 @@
 $ENTRY Go
 { (e.Rules) =
 <Eq (e.Rules) <Sim ( )
- <Decode (<Conc ('c c d f c f e c b a d a Bs d a c b d c e c a d a f a a d f d b  =')
-' c c d f c f e c b a d a f e e b b b Fs c e c a d a f a a d f d b' >)> 
- <Decode (<Conc ('e d d Hs As f a a b f c e e f f Fs d a f c e b b d f b e  =')
-' e d d b Ds f Cs e' >)> 
- <Decode (<Conc ('d Ds Ds e e a b d b a e e b e f f f e a Ds e a b d Ds a f c Ds a f f c c Ds c e f a d  =')
-' d c Ds e e a b d b a e e b e f f f e a Ds e a b d c a f c Ds a f f c c c Ds e f a d' >)> 
- <Decode (<Conc ('d e f a e b a e b a e d c e e b d a b f a f e Ds e a f e b a e Ds Ds c d f a f f f  =')
-' d e f a e b a e b a e d Ds e e b d a b f a f e c e a f e b a e Ds c c d f a f f f' >)> 
+ <Decode (<Conc ('d c e a d e Bs e c f c e a d c e c c e e d c c a b e e  =')
+' d c e a d e b c e Js Hs e e' >)> 
+ <Decode (<Conc ('a b b b d f f d d c As c d d d f c a c e f d c b e e f e d e f e f c d e f  =')
+' a b b b d f f d d c As c d d d f c a c e f d c b e e f e d e f e f c d e f' >)> 
+ <Decode (<Conc ('a b f a b f e f e a e f a c As a f c f f f a b c f e f a f e d e f b a c e  =')
+' a b f a b f e f e a e f a c a d e b a f c f f f a b c f e f a f e d e f b a c e' >)> 
  >>;
 }
 
