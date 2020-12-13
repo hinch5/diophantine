@@ -113,17 +113,16 @@ Translate {
 }
 
 ProcessGeneratedEq {
-	(e.Rules) (t.Tag ()()) = (e.Rules);
-	((s.Name 's -> empty') e.Rules) (t.Tag ((var 'e' s.Name))()) = <ProcessGeneratedEq (e.Rules) (t.Tag ()())>;
-	((s.Name 's -> ' s.Name2 's ' s.Name 's') e.Rules) (t.Tag ((var 'e' s.Name)) ((var 'e' s.Name2) e.Rest)) = <ProcessGeneratedEq (e.Rules) (t.Tag ((var 'e' s.Name))(e.Rest))>;
-	((s.Name 's -> ' s.x1 s.x2 s.x3 s.x4 s.x5 't ' s.Name 's') e.Rules) (t.Tag ((var 'e' s.Name)) ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.Rest)) = <ProcessGeneratedEq (e.Rules) (t.Tag ((var 'e' s.Name))(e.Rest))>;
-	(e.Rules) (e.Eq) = False;
+	((s.Name 's -> empty') e.Rules) (t.Tag ((var 'e' s.Name))()) (e.Processed) = <ProcessGeneratedEq (e.Rules) (t.Tag ()()) (e.Processed)>;
+	((s.Name 's -> ' s.Name2 's ' s.Name 's') e.Rules) (t.Tag ((var 'e' s.Name)) ((var 'e' s.Name2) e.Rest)) (e.Processed) = <ProcessGeneratedEq (e.Rules) (t.Tag ((var 'e' s.Name))(e.Rest)) (e.Processed)>;
+	((s.Name 's -> ' s.x1 s.x2 s.x3 s.x4 s.x5 't ' s.Name 's') e.Rules) (t.Tag ((var 'e' s.Name)) ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.Rest)) (e.Processed) = <ProcessGeneratedEq (e.Rules) (t.Tag ((var 'e' s.Name))(e.Rest)) (e.Processed)>;
+	(e.Rules) (e.Any) (e.Processed) = (e.Rules) (e.Processed (e.Any));
 }
 
 ProcessGeneratedRules {
-	(e.Rules) () = (e.Rules);
-	(e.Rules) (t.Eq e.Generated) = <ProcessGeneratedRules <ProcessGeneratedEq (e.Rules) t.Eq> (e.Generated)>;
-	False (e.Generated) = False;
+	(e.Rules) (e.Generated) = <ProcessGeneratedRules (e.Rules) () (e.Generated)>;
+	(e.Rules) (e.Processed) () = (e.Rules) (e.Processed);
+	(e.Rules) (e.Processed) (t.Eq e.Generated) = <ProcessGeneratedRules <ProcessGeneratedEq (e.Rules) t.Eq (e.Processed)> (e.Generated)>;
 }
 
 /*совместимость*/
@@ -137,9 +136,7 @@ Eq2 {
 	Solved (e.Rules) False = False;
 	Solved (e.Rules) (e.System) = <Eq2 Split (e.Rules) <SplitGenerated (e.System)> >;
 	Split (e.Rules) (e.Generated) (e.System) = <Eq2 Processed <ProcessGeneratedRules (e.Rules) (e.Generated)> (e.System)>;
-	Processed False (e.System) = False;
-	Processed (e.Rules) (e.System) = <Eq2 Filled <ProcessTVars (e.Rules) (e.System)>>;
-	Filled False (e.System) = False;
+	Processed (e.Rules) (e.Processed) (e.System) = <Eq2 Filled <ProcessTVars (e.Rules) (e.Processed e.System)>>;
 	Filled (e.Rules) (e.System) = <EqSubst (e.Rules) e.System>;
 }
 
@@ -151,9 +148,6 @@ ProcessTVars {
     	= <ProcessTVars (e.Rules) (e.Processed (t.Tag ()())) (<Sim () <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym)) e.System>>)>;
     ((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.x6 s.x7 s.x8 s.x9 s.x10't') e.Rules) (e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))) e.System)
     	= <ProcessTVars (e.Rules) (e.Processed (t.Tag ()())) (<Sim () <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))) e.System>>)>;
-	(e.Rules) (e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym)) e.System) = False;
-	(e.Rules) (e.Processed) ((t.Tag (s.Sym)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.System) = False;
-	(e.Rules) (e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))) e.System) = False;
 	(e.Rules) (e.Processed) (e.System) = (e.Rules) (e.Processed e.System);
 }
 
