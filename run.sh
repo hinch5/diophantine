@@ -22,6 +22,23 @@ if [[ $2 == "" ]]; then
 	exit 1
 fi
 
+if [[ $3 == "" ]]; then
+	echo "enter interpreter path"
+	exit 1
+fi
+
+if [[ $3 == "default" ]]; then
+	weqs_path="weqs_int_bench_task.ref"
+elif [[ $3 == "rhs" ]]; then
+	weqs_path="rhs_weqs/weqs_int_bench_task.ref"
+elif [[ $3 == "fase" ]]; then
+	weqs_path="fast_weqs/weqs_int_bench_task.ref"
+elif [[ $3 == "rhs fast" ]]; then
+	weqs_path="rhs_weqs/fast_weqs/weqs_int_bench_task.ref"
+else
+	weqs_path=$3
+fi
+
 grep "Equation" "$1_track/woorpje/$1_track_$2.eq" > tmp
 
 res="\$ENTRY Go\\n{ (e.Rules) =\\n<Eq (e.Rules) <Sim ( )\\n"
@@ -51,7 +68,7 @@ res="$res >>;\\n}\\n"
 rm -r solutions/$1_track_$2
 mkdir -p solutions/$1_track_$2
 
-sed -e "s/\\\$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}/$res/g" <weqs_int_bench_task.ref >solutions/$1_track_$2/weqs_int_bench_$1_track_$2.ref
+sed -e "s/\\\$ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}/$res/g" <${weqs_path} >solutions/$1_track_$2/weqs_int_bench_$1_track_$2.ref
 
 dos2unix solutions/$1_track_$2/weqs_int_bench_$1_track_$2.ref
 inref4p solutions/$1_track_$2/weqs_int_bench_$1_track_$2.ref || exit
