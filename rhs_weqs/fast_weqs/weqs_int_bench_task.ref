@@ -1326,6 +1326,7 @@ CheckPositiveComponents {
 	((s.Name t.Count) e.List) (e.ToCheck) '+' = <CheckPositiveComponents (e.List) (e.ToCheck s.Name) '+'>;
 	() (e.ToCheck) '+' = (e.ToCheck) '+';
 	() (e.ToCheck) '-' = (e.ToCheck) '-';
+	() (e.ToCheck) 'U' = 'F';
 }
 
 CheckKPositive {
@@ -1363,6 +1364,67 @@ TruncateIfPositive {
 	(e.Solution) (e.Elem) (e.ToCheck) '-' = <CheckAllKPositive '-' (e.Solution) (e.ToCheck)>;
 }
 
+IsZeroElem {
+	() = 'T';
+	((s.Name (0)) e.Elem) = <IsZeroElem (e.Elem)>;
+	((s.Name 0) e.Elem) = <IsZeroElem (e.Elem)>;
+	((s.Name t.Any) e.Elem) = 'F';
+}
+
+GetByValue {
+	(e.Elem) t.Value = <GetByValue (e.Elem) () t.Value>;
+	() (e.Processed) t.Value = 'F';
+	((s.Name t.Value) e.Elem) (e.Processed) t.Value = (e.Processed e.Elem) s.Name;
+	((s.Name t.Value2) e.Elem) (e.Processed) t.Value = <GetByValue (e.Elem) (e.Processed (s.Name t.Value2)) t.Value>;
+}
+
+FindAndMakeZero {
+	((Const t.Value) e.Solution) s.Name = <FindAndMakeZero ((Const t.Value)) (e.Solution) s.Name>;
+	(e.Processed) ((s.Name t.Any) e.Solution) s.Name = (e.Processed (s.Name (0)) e.Solution) t.Any;
+	(e.Processed) ((s.Name2 t.Any) e.Solution) s.Name = <FindAndMakeZero (e.Processed (s.Name2 t.Any)) (e.Solution) s.Name>;
+}
+
+KMinusKRelation {
+	s.Name s.Name2 ('-' t.First) ('-' t.Second) = 'F';
+	s.Name s.Name2 ('-' t.First) t.Second = <KMinusKRelation s.Name s.Name2 ('-' t.First) t.Second <IsNegative <SubUnwrap (t.First) t.Second>>>;
+	s.Name s.Name2 t.First ('-' t.Second) = <KMinusKRelation s.Name s.Name2 t.First ('-' t.Second) <IsNegative <SubUnwrap (t.Second) t.First>>>;
+	s.Name s.Name2 t.First t.Second = 'F';
+	s.Name s.Name2 ('-' t.First) t.Second '+' = '-';
+    s.Name s.Name2 t.First ('-' t.Second) '+' = '+';
+	s.Name s.Name2 ('-' t.First) t.Second s.Any = 'F';
+    s.Name s.Name2 t.First ('-' t.Second) s.Any = 'F';
+}
+
+CheckKMinusK {
+	(e.Elem) s.Name s.Name2 = <CheckKMinusK (e.Elem) s.Name s.Name2 <FindAndMakeZero (e.Elem) s.Name>>;
+	(e.Elem) s.Name s.Name2 (e.ZeroElem) t.First = <CheckKMinusK (e.Elem) s.Name s.Name2 t.First <FindAndMakeZero (e.ZeroElem) s.Name2>>;
+	(e.Elem) s.Name s.Name2 t.First (e.ZeroElem) t.Second = <CheckKMinusK s.Name s.Name2 t.First t.Second <CheckPositiveComponents (e.ZeroElem)>>;
+	s.Name s.Name2 t.First t.Second (e.ToCheck) '-' = <KMinusKRelation s.Name s.Name2 t.First t.Second>;
+	s.Name s.Name2 t.First t.Second (e.ToCheck) s.Any = 'F';
+	s.Name s.Name2 t.First t.Second 'F' = 'F';
+}
+
+TryFindKMinusKSolution {
+	() s.Name s.Name2 = 'F';
+	((s.Var (e.Elem)) e.Solution) s.Name s.Name2 = <TryFindKMinusKSolution (e.Solution) s.Name s.Name <CheckKMinusK (e.Elem) s.Name s.Name2>>;
+	(e.Solution) s.Name s.Name2 '+' = '+';
+	(e.Solution) s.Name s.Name2 '-' = '-';
+	(e.Solution) s.Name s.Name2 'F' = <TryFindKMinusKSolution (e.Solution) s.Name s.Name2>;
+}
+
+TruncateIfKMinusK {
+	(e.Solution) ((Const (0)) e.Elem) = <TruncateIfKMinusK (e.Solution) (e.Elem)>;
+	(e.Solution) ((Const 0) e.Elem) = <TruncateIfKMinusK (e.Solution) (e.Elem)>;
+	(e.Solution) ((Const t.Value) e.Elem) = 'F';
+	(e.Solution) (e.Elem) = <TruncateIfKMinusK First (e.Solution) <GetByValue (e.Elem) (1)>>;
+	First (e.Solution) 'F' = 'F';
+	First (e.Solution) (e.Elem) s.Name = <TruncateIfKMinusK Second (e.Solution) <GetByValue (e.Elem) ('-' 1)> s.Name>;
+	Second (e.Solution) 'F' s.Name = 'F';
+	Second (e.Solution) (e.Elem) s.Name2 s.Name = <TruncateIfKMinusK Matched (e.Solution) s.Name s.Name2 <IsZeroElem (e.Elem)>>;
+	Matched (e.Solution) s.Name s.Name2 'F' = 'F';
+	Matched (e.Solution) s.Name s.Name2 'T' = <TryFindKMinusKSolution (e.Solution) s.Name s.Name2>;
+}
+
 TruncatedSolutionIsNegative {
 	'F' = 'F';
 	t.Count = <IsNegative t.Count>;
@@ -1378,31 +1440,38 @@ CompareFirstLengths {
 	(t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2))) (e.Solution) s.Name s.Name2 'F' = 'F';
 	t.Eq (e.Solution) s.Name s.Name2
 		= <CompareFirstLengths (e.Solution) <SubSolutions <FindInSolution (e.Solution) s.Name> <FindInSolution (e.Solution) s.Name2>>>;
-	(e.Solution) (e.ToTruncate) = <CompareFirstLengths <TruncatedSolutionIsNegative <TruncateSolution (e.ToTruncate)>> <TruncateIfPositive (e.Solution) (e.ToTruncate)>>;
-	'F' '+' = '+';
-	'F' '-' = '-';
-	'0' s.Any = '0';
-	'+' s.Any = '+';
-	'-' s.Any = '-';
-	'F' 'F' = 'F';
+	(e.Solution) (e.ToTruncate) = <CompareFirstLengths <TruncatedSolutionIsNegative <TruncateSolution (e.ToTruncate)>> <TruncateIfPositive (e.Solution) (e.ToTruncate)> <TruncateIfKMinusK (e.Solution) (e.ToTruncate)>>;
+	'0' s.Any s.Any2 = '0';
+    '+' s.Any s.Any2 = '+';
+    '-' s.Any s.Any2 = '-';
+	'F' '+' s.Any = '+';
+	'F' '-' s.Any = '-';
+	'F' 'F' '+' = '+';
+	'F' 'F' '-' = '-';
+	'F' 'F' 'F' = 'F';
 }
 
 FirstReplaceDifferent {
-	(e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) = <FirstReplaceDifferent (e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) <FindUnusedVar (e.Generated e.System)>>;
-	(e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) s.NextName
+	t.Tag (e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) = <FirstReplaceDifferent t.Tag (e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) <FindUnusedVar (e.Generated e.System)>>;
+	Left (e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) s.NextName
 		= <DiophantineSolve (
 			<Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.Name2)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 'e' s.NextName))) e.Generated>>
 			 (Generated ((var 'e' s.Name))((var 'e' s.Name2)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 'e' s.NextName)))
 			 <Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.Name2)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 'e' s.NextName))) e.System>>)>;
+	Right (e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5) s.NextName
+		= <DiophantineSolve (
+			<Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.NextName)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 'e' s.Name2))) e.Generated>>
+			 (Generated ((var 'e' s.Name))((var 'e' s.NextName)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 'e' s.Name2)))
+			 <Sim () <subst_2 (assign (var 'e' s.Name)((var 'e' s.NextName)(var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(var 'e' s.Name2))) e.System>>)>;
 }
 
 FirstReplace {
-	(e.Generated) (e.System) s.Name s.Name2 (e.Solution) '-' (s.x1 s.x2 s.x3 s.x4 s.x5)
-		= <FirstReplaceDifferent (e.Generated) (e.System) s.Name2 s.Name (s.x1 s.x2 s.x3 s.x4 s.x5)>;
-	(e.Generated) (e.System) s.Name s.Name2 (e.Solution) '0' (s.x1 s.x2 s.x3 s.x4 s.x5)
+	t.Tag (e.Generated) (e.System) s.Name s.Name2 (e.Solution) '-' (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <FirstReplaceDifferent t.Tag (e.Generated) (e.System) s.Name2 s.Name (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	t.Tag (e.Generated) (e.System) s.Name s.Name2 (e.Solution) '0' (s.x1 s.x2 s.x3 s.x4 s.x5)
 		= <Sim () <subst_2 (assign (var 'e' s.Name2)((var 'e' s.Name))) e.Generated >> (Generated ((var 'e' s.Name2))((var 'e' s.Name))) <Sim () <subst_2 (assign (var 'e' s.Name2)((var 'e' s.Name))) e.System>>;
-	(e.Generated) (e.System) s.Name s.Name2 (e.Solution) '+' (s.x1 s.x2 s.x3 s.x4 s.x5)
-		= <FirstReplaceDifferent (e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	t.Tag (e.Generated) (e.System) s.Name s.Name2 (e.Solution) '+' (s.x1 s.x2 s.x3 s.x4 s.x5)
+		= <FirstReplaceDifferent t.Tag (e.Generated) (e.System) s.Name s.Name2 (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
 
 FirstReplaceLeft {
@@ -1417,14 +1486,14 @@ FirstReplaceLeft {
 	(e.Generated) (e.System) (t.Tag ((var 'e' s.Name) e.LHS) ((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) 'F'
 		= e.Generated (t.Tag ((var 'e' s.Name) e.LHS)(var 'e' s.Name2) e.RHS) e.System;
 	(e.Generated) (e.System) (t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym
-		= <FirstReplace (e.Generated) ((t.Tag ((var 'e' s.Name) e.LHS) ((var 'e' s.Name2) e.RHS)) e.System) s.Name s.Name2 (e.Solution) s.Sym (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+		= <FirstReplace Left (e.Generated) ((t.Tag ((var 'e' s.Name) e.LHS) ((var 'e' s.Name2) e.RHS)) e.System) s.Name s.Name2 (e.Solution) s.Sym (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
 
 FirstReplaceRight {
 	(e.Generated) (e.System) (t.Tag (e.LHS (var 'e' s.Name))(e.RHS (var 'e' s.Name2))) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) 'F'
 		= e.Generated (t.Tag (e.LHS (var 'e' s.Name))(e.RHS (var 'e' s.Name2))) e.System;
 	(e.Generated) (e.System) (t.Tag (e.LHS (var 'e' s.Name)) (e.RHS (var 'e' s.Name2))) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym
-		= <FirstReplace (e.Generated) ((t.Tag (e.LHS (var 'e' s.Name)) (e.RHS (var 'e' s.Name2))) e.System) s.Name s.Name2 (e.Solution) s.Sym (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+		= <FirstReplace Right (e.Generated) ((t.Tag (e.LHS (var 'e' s.Name)) (e.RHS (var 'e' s.Name2))) e.System) s.Name s.Name2 (e.Solution) s.Sym (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
 
 TryFirstReplace {
