@@ -1485,7 +1485,7 @@ FirstReplaceLeft {
 			(s.x1 s.x2 s.x3 s.x4 s.x5)
 			<CompareFirstLengths (t.Tag (e.LHS (var 'e' s.Name))(e.RHS (var 'e' s.Name2))) (e.Solution) s.Name s.Name2>>;
 	(e.Generated) (e.System) (t.Tag ((var 'e' s.Name) e.LHS) ((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) 'F'
-		= e.Generated (t.Tag ((var 'e' s.Name) e.LHS)(var 'e' s.Name2) e.RHS) e.System;
+		= e.Generated (t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) e.System;
 	(e.Generated) (e.System) (t.Tag ((var 'e' s.Name) e.LHS)((var 'e' s.Name2) e.RHS)) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5) s.Sym
 		= <FirstReplace Left (e.Generated) ((t.Tag ((var 'e' s.Name) e.LHS) ((var 'e' s.Name2) e.RHS)) e.System) s.Name s.Name2 (e.Solution) s.Sym (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
