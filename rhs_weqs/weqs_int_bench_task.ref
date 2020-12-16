@@ -746,6 +746,7 @@ DiophantineSolve {
 	Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) False = False;
 	Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) (e.Result) = <DiophantineSolve Apply (e.Generated) (e.System) (e.Result)>;
 	Apply (e.Generated) (e.System) (e.Solution) = <DiophantineSolve Check (<ApplySolution (e.Generated) (e.System) (e.Solution)>)>;
+	Check False = False;
 	Check (e.System) = <DiophantineSolve Checked (e.System) <FindTVarsContradiction (e.System)>>;
 	Checked (e.System) False = False;
 	Checked (e.System) = e.System;
@@ -1553,8 +1554,16 @@ TruncateSolution {
 	((Const t.Count) e.List) = 'F';
 }
 
+TruncateSolutionWithNegativeCheck {
+	(e.List) = <TruncateSolutionWithNegativeCheck (e.List) <TruncateSolution (e.List)>>;
+	(e.List) ('-' t.Value) = False;
+	(e.List) 'F' = 'F';
+	(e.List) t.Value = t.Value;
+}
+
 TryReplaceSingle {
-	(e.Generated) (e.System) s.Name t.Solution (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryReplaceSingle Replace (e.Generated) (e.System) s.Name <TruncateSolution t.Solution> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	(e.Generated) (e.System) s.Name t.Solution (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryReplaceSingle Replace (e.Generated) (e.System) s.Name <TruncateSolutionWithNegativeCheck t.Solution> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Replace (e.Generated) (e.System) s.Name False (s.x1 s.x2 s.x3 s.x4 s.x5) = False;
 	Replace (e.Generated) (e.System) s.Name 'F' (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5);
 	Replace (e.Generated) (e.System) s.Name t.Value (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle (e.Generated) (e.System) s.Name t.Value (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
@@ -1567,6 +1576,7 @@ ApplySolution {
 	(e.Generated) (e.System) () = e.Generated e.System;
 	(e.Generated) (e.System) (e.Solution) = <ApplySolution (e.Generated) (e.Solution) (e.System) (<NextNameT <FindMaxNameT () e.Generated e.System>>)>;
 	(e.Generated) (e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution Replace () (e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Replace (e.Processed) (e.Solution) False = False;
 	Replace (e.Processed) ((s.Name t.Any) e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution Replace (e.Processed (s.Name t.Any)) (e.Solution) <TryReplaceSingle (e.Generated) (e.System) s.Name t.Any (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
 	Replace (e.Processed) () (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution First (e.Processed) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 	First (e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplace (e.Generated) (e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
