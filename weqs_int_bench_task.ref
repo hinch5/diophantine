@@ -4,8 +4,6 @@
 
 $ENTRY Go { (e.Rules) = <Eq (e.Rules) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>;}
 
-/*$ENTRY Go {  = <Print <Eq (('Cs -> As Cs')('Cs -> empty')) <Sim ( ) <Decode (<Conc ('As =') ' Cs'>)>>>>;}*/
-
 /* Auxiliary function concatenating too long input strings.*/
 Conc {(e.1) e.2 = e.1 e.2;}
 
@@ -23,7 +21,7 @@ Variables {
 
 /* Список всех литералов, которые могут выступать в качестве букв алфавита констант. */
 Alphabet {
-	= 'qwertyuiopasdfghjklzxcvbnm'; 
+	= 'qwertyuiopasdfghjklzxcvbnm';
 }
 
 AlphabetT {
@@ -112,18 +110,17 @@ Translate {
 		(<Variables>)(<Alphabet>) s.Term e.Rest>;
 }
 
-ProcessGeneratedEq {
-	(e.Rules) (t.Tag ()()) = (e.Rules);
-	((s.Name 's -> empty') e.Rules) (t.Tag ((var 'e' s.Name))()) = <ProcessGeneratedEq (e.Rules) (t.Tag ()())>;
-	((s.Name 's -> ' s.Name2 's ' s.Name 's') e.Rules) (t.Tag ((var 'e' s.Name)) ((var 'e' s.Name2) e.Rest)) = <ProcessGeneratedEq (e.Rules) (t.Tag ((var 'e' s.Name))(e.Rest))>;
-	((s.Name 's -> ' s.x1 s.x2 s.x3 s.x4 s.x5 't ' s.Name 's') e.Rules) (t.Tag ((var 'e' s.Name)) ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.Rest)) = <ProcessGeneratedEq (e.Rules) (t.Tag ((var 'e' s.Name))(e.Rest))>;
-	(e.Rules) (e.Eq) = False;
+GeneratedEqToSubst {
+	(var 'e' s.Name) (e.List) = <GeneratedEqToSubst (var 'e' s.Name) (e.List) ()>;
+	(var 'e' s.Name) () (e.Result) = e.Result (s.Name's -> empty');
+	(var 'e' s.Name) ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.List) (e.Result) = <GeneratedEqToSubst (var 'e' s.Name) (e.List) (e.Result (s.Name's -> ' s.x1 s.x2 s.x3 s.x4 s.x5 't ' s.Name 's'))>;
+	(var 'e' s.Name) ((var 'e' s.Name2) e.List) (e.Result) = <GeneratedEqToSubst (var 'e' s.Name) (e.List) (e.Result (s.Name's -> ' s.Name2 's ' s.Name 's'))>;
 }
 
-ProcessGeneratedRules {
-	(e.Rules) () = (e.Rules);
-	(e.Rules) (t.Eq e.Generated) = <ProcessGeneratedRules <ProcessGeneratedEq (e.Rules) t.Eq> (e.Generated)>;
-	False (e.Generated) = False;
+GeneratedToRules {
+	(e.Generated) = <GeneratedToRules (e.Generated) ()>;
+	() (e.Rules) = e.Rules;
+	((Generated ((var 'e' s.Name))(e.List)) e.Generated) (e.Rules) = <GeneratedToRules (e.Generated) (e.Rules <GeneratedEqToSubst (var 'e' s.Name) (e.List)>)>;
 }
 
 /*совместимость*/
@@ -135,26 +132,28 @@ Eq {
 Eq2 {
 	(e.Rules) (e.System) = <Eq2 Solved (e.Rules) (<DiophantineSolve (e.System)>)>;
 	Solved (e.Rules) False = False;
-	Solved (e.Rules) (e.System) = <Eq2 Split (e.Rules) <SplitGenerated (e.System)> >;
-	Split (e.Rules) (e.Generated) (e.System) = <Eq2 Processed <ProcessGeneratedRules (e.Rules) (e.Generated)> (e.System)>;
-	Processed False (e.System) = False;
-	Processed (e.Rules) (e.System) = <Eq2 Filled <ProcessTVars (e.Rules) (e.System)>>;
-	Filled False (e.System) = False;
-	Filled (e.Rules) (e.System) = <EqSubst (e.Rules) e.System>;
+	Solved (e.Rules) (e.System) = <Eq2 Split (e.Rules)  <SplitGenerated (e.System)>>;
+	Split (e.Rules) (e.Generated) (e.System) = <EqTVars (e.Rules) (e.System)>;
 }
 
-ProcessTVars {
-	(e.Rules) (e.System) = <ProcessTVars (e.Rules) () (e.System)>;
-	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.Rules) (e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym)) e.System)
-		= <ProcessTVars (e.Rules) (e.Processed (t.Tag ()())) (<Sim () <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym)) e.System>>)>;
-    ((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym'') e.Rules) (e.Processed) ((t.Tag (s.Sym)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.System)
-    	= <ProcessTVars (e.Rules) (e.Processed (t.Tag ()())) (<Sim () <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym)) e.System>>)>;
-    ((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.x6 s.x7 s.x8 s.x9 s.x10't') e.Rules) (e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))) e.System)
-    	= <ProcessTVars (e.Rules) (e.Processed (t.Tag ()())) (<Sim () <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))) e.System>>)>;
-	(e.Rules) (e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym)) e.System) = False;
-	(e.Rules) (e.Processed) ((t.Tag (s.Sym)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.System) = False;
-	(e.Rules) (e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))) e.System) = False;
-	(e.Rules) (e.Processed) (e.System) = (e.Rules) (e.Processed e.System);
+/*проверка возможности автоматической замены сразу большого количества буквенных t-переменных*/
+EqTVars {
+	(e.Rules) (e.System) = <EqTVars (e.Rules) <FillTVars (e.System)>>;
+	(e.Rules) (e.System) (e.Subst) = <EqSubst (e.Rules) e.System>;
+}
+
+FillTVars {
+	(e.System) = <FillTVars () (e.System) ()>;
+	(e.Processed) ((t.Tag ()()) e.System) (e.Subst)
+		= <FillTVars (e.Processed (t.Tag ()())) (e.System) (e.Subst)>;
+	(e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))(s.Sym)) e.System) (e.Subst)
+		= <FillTVars (e.Processed (t.Tag ()())) (<Sim () <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym)) e.System>>) (e.Subst (s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym''))>;
+	(e.Processed) ((t.Tag (s.Sym)((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))) e.System) (e.Subst)
+		= <FillTVars (e.Processed (t.Tag ()())) (<Sim () <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym)) e.System>>) (e.Subst (s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.Sym''))>;
+	(e.Processed) ((t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5))((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))) e.System) (e.Subst)
+		= <FillTVars (e.Processed (t.Tag ()())) (<Sim () <subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10))) e.System>>) (e.Subst (s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.x6 s.x7 s.x8 s.x9 s.x10't'))>;
+	(e.Processed) (t.Eq e.System) (e.Subst) = (e.Processed t.Eq e.System) (e.Subst);
+	(e.Processed) () (e.Subst) = (e.Processed) (e.Subst);
 }
 
 /*
@@ -235,7 +234,7 @@ EqSubst {
     		<subst_2 (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)(s.Sym))e.Other>
     	>)>;
     /* буквенная переменная */
-   	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.x6 s.x7 s.x8 s.x9 s.x10't') e.R1) (e.Processed) (t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10) e.RHS)) e.Other
+   	((s.x1 s.x2 s.x3 s.x4 s.x5't -> 's.x6 s.x7 s.x8 s.x9 s.x10't') e.R1) (t.Tag ((var 't' s.x1 s.x2 s.x3 s.x4 s.x5) e.LHS)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10) e.RHS)) e.Other
    		= <Eq2 (e.R1) (<Sim ()
    			(t.Tag (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))(/*Empty*/)(e.LHS)>)
             (<subst (assign (var 't' s.x1 s.x2 s.x3 s.x4 s.x5)((var 't' s.x6 s.x7 s.x8 s.x9 s.x10)))(/*Empty*/)(e.RHS)>))
@@ -280,7 +279,7 @@ subst_2 {
 		= (t.Tag (<subst t.Asg (/* EMPTY */) (e.LHS)>)(<subst t.Asg (/* EMPTY */) (e.RHS)>))
 		<subst_2 t.Asg e.Other>;
 	t.Asg /* EMPTY */ = /* EMPTY */;
-}	
+}
 
 /* Модифицированная функция упрощения удаляет одинаковые термы с левой и правой стороны уравнения. Имеет входной формат ((e.LHS)(e.RHS))^*. */
 Sim {
@@ -370,7 +369,7 @@ Split {
       Присоединяем соответствующие термы справа к префиксам и включаем их в мультимножества элементов префиксов. После чего проверяем эти мультимножества на совпадение – вызываем
       функцию CountMS. */
 	(e.Result)'N'(e.MS1)(e.MS2)((e.LPref)(e.RPref))(t.Tag (t.L1 e.LHS)(t.R1 e.RHS))
-		= <Split 
+		= <Split
 			(e.Result)
 			<CountMS <Include t.L1 (/* EMPTY */)(e.MS1)><Include t.R1 (/* EMPTY */)(e.MS2)>>
 			((e.LPref t.L1)(e.RPref t.R1))
@@ -378,7 +377,7 @@ Split {
 		>;
 	/* 1б. Статус текущего расщепления: некорректное. Делаем попытку следующего расщепления (см. предложение 1а). */
 	(e.Result)'F'(e.MS1)(e.MS2)((e.LPref)(e.RPref))(t.Tag (t.L1 e.LHS)(t.R1 e.RHS))
-		= <Split 
+		= <Split
 			(e.Result)
 			<CountMS <Include t.L1 (/* EMPTY */)(e.MS1)><Include t.R1 (/* EMPTY */)(e.MS2)>>
 			((e.LPref t.L1)(e.RPref t.R1))
@@ -398,7 +397,7 @@ Split {
 		= e.Result;
 	/* 4. Или в левой, или в правой части уравнения больше не осталось термов: пытаемся расщепить остаток уравнения справа. */
 	(e.Result)s.Log(e.MS1)(e.MS2)((e.LPref)(e.RPref))(t.Tag (e.LHS)(e.RHS))
-		= <SplitRight 
+		= <SplitRight
 			(e.Result)
 			'N'((Const ))((Const ))
 			((/* EMPTY */)(/* EMPTY */))
@@ -452,7 +451,7 @@ AreEqual {
 	/* 4. В остальных случаях удаляем первый элемент первого мультимножества из второго как из множества.
     Если оказалось, что этот элемент отсутствует во втором мультимножестве или присутствует с другой кратностью, тогда помечаем второе множество как заведомо неравное первому. */
 	(t.1 e.M1)(e.M2) = <AreEqual (e.M1)(<ElMinus t.1 (/* EMPTY */)(e.M2)>)>;
-	
+
 }
 
 /* Функция вычитания элемента из мультимножества. Считается выполненной успешно, если данный элемент
@@ -493,9 +492,9 @@ SplitRight {
       Присоединяем соответствующие термы слева к префиксам и включаем их в мультимножества элементов префиксов.
       После чего проверяем эти мультимножества на совпадение. Вызываем функцию CountMS. */
   (e.Result)'N'(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))(t.Tag (e.LHS t.LL)(e.RHS t.RL))
-	= <SplitRight 
+	= <SplitRight
 		(e.Result)
-		<CountMS 
+		<CountMS
 			<Include t.LL (/* EMPTY */)(e.MS1)>
 			<Include t.RL (/* EMPTY */)(e.MS2)>
 		>
@@ -504,9 +503,9 @@ SplitRight {
 	>;
 	/* 1б. Статус текущего расщепления: некорректное. Делаем попытку следующего расщепления (см. предложение 1а). */
   (e.Result)'F'(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))(t.Tag (e.LHS t.LL)(e.RHS t.RL))
-	= <SplitRight 
+	= <SplitRight
 		(e.Result)
-		<CountMS 
+		<CountMS
 			<Include t.LL (/* EMPTY */)(e.MS1)>
 			<Include t.RL (/* EMPTY */)(e.MS2)>
 		>
@@ -529,13 +528,13 @@ SplitRight {
 	/* 4. Или в левой, или в правой части уравнения больше не осталось термов – помещаем остаток уравнения в итоговую систему уравнений самым первым
     и проверяем, не является ли он противоречивым по кратности переменных. */
   (e.Result)s.Log(e.MS1)(e.MS2)((e.LSuff)(e.RSuff))(t.Tag (e.LHS)(e.RHS))
-	= <SubjugateEq 
-		<YieldCheckSubMS 
+	= <SubjugateEq
+		<YieldCheckSubMS
 			(<AddElsToMS (e.LHS)(e.MS1)>)
 			(<AddElsToMS (e.RHS)(e.MS2)>)
 		>
 		<Sim2 (t.Tag (e.LHS e.LSuff)(e.RHS e.RSuff))>
-	> 
+	>
 	e.Result;
 }
 
@@ -746,6 +745,7 @@ DiophantineSolve {
 	Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) False = False;
 	Assign (e.Generated) (e.System) (e.AllSet) (e.Matrix) (e.K) (e.Result) = <DiophantineSolve Apply (e.Generated) (e.System) (e.Result)>;
 	Apply (e.Generated) (e.System) (e.Solution) = <DiophantineSolve Check (<ApplySolution (e.Generated) (e.System) (e.Solution)>)>;
+	Check False = False;
 	Check (e.System) = <DiophantineSolve Checked (e.System) <FindTVarsContradiction (e.System)>>;
 	Checked (e.System) False = False;
 	Checked (e.System) = e.System;
@@ -1192,10 +1192,6 @@ TransposeMatrix {
 	(e.Result) (e.System) (e.Row) = <TransposeMatrix (e.Result (e.Row)) <MakeTransponentRowMatrix () () (e.System)>>;
 }
 
-/*******************************************************************************************/
-/*****************************************Поиск k*******************************************/
-/*******************************************************************************************/
-
 LetterByInd {
 	(e.List) (t.Count) = <LetterByInd (e.List) t.Count 0>;
 	(e.List) t.Count = <LetterByInd (e.List) t.Count 0>;
@@ -1553,8 +1549,16 @@ TruncateSolution {
 	((Const t.Count) e.List) = 'F';
 }
 
+TruncateSolutionWithNegativeCheck {
+	(e.List) = <TruncateSolutionWithNegativeCheck (e.List) <TruncateSolution (e.List)>>;
+	(e.List) ('-' t.Value) = False;
+	(e.List) 'F' = 'F';
+	(e.List) t.Value = t.Value;
+}
+
 TryReplaceSingle {
-	(e.Generated) (e.System) s.Name t.Solution (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryReplaceSingle Replace (e.Generated) (e.System) s.Name <TruncateSolution t.Solution> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	(e.Generated) (e.System) s.Name t.Solution (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryReplaceSingle Replace (e.Generated) (e.System) s.Name <TruncateSolutionWithNegativeCheck t.Solution> (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Replace (e.Generated) (e.System) s.Name False (s.x1 s.x2 s.x3 s.x4 s.x5) = False;
 	Replace (e.Generated) (e.System) s.Name 'F' (s.x1 s.x2 s.x3 s.x4 s.x5) = (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5);
 	Replace (e.Generated) (e.System) s.Name t.Value (s.x1 s.x2 s.x3 s.x4 s.x5) = <ReplaceSingle (e.Generated) (e.System) s.Name t.Value (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 }
@@ -1567,6 +1571,7 @@ ApplySolution {
 	(e.Generated) (e.System) () = e.Generated e.System;
 	(e.Generated) (e.System) (e.Solution) = <ApplySolution (e.Generated) (e.Solution) (e.System) (<NextNameT <FindMaxNameT () e.Generated e.System>>)>;
 	(e.Generated) (e.Solution) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution Replace () (e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
+	Replace (e.Processed) (e.Solution) False = False;
 	Replace (e.Processed) ((s.Name t.Any) e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution Replace (e.Processed (s.Name t.Any)) (e.Solution) <TryReplaceSingle (e.Generated) (e.System) s.Name t.Any (s.x1 s.x2 s.x3 s.x4 s.x5)>>;
 	Replace (e.Processed) () (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <ApplySolution First (e.Processed) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
 	First (e.Solution) (e.Generated) (e.System) (s.x1 s.x2 s.x3 s.x4 s.x5) = <TryFirstReplace (e.Generated) (e.System) (e.Solution) (s.x1 s.x2 s.x3 s.x4 s.x5)>;
